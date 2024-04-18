@@ -19,10 +19,39 @@ void renderBitmapString(float x, float y, void* font, const char* string) {
     }
 }
 
+// Function to calculate the width of a string with a given font
+int calculateStringWidth(void* font, const char* string) {
+    int width = 0;
+    const char* c;
+    for (c = string; *c != '\0'; c++) {
+        width += glutBitmapWidth(font, *c);
+    }
+    return width;
+}
+
 void printText() {
-    renderBitmapString(10.0f, 30.0f, GLUT_BITMAP_HELVETICA_18, "SCORE");
-    renderBitmapString(100.0f, 30.0f, GLUT_BITMAP_HELVETICA_18, "LIVES");
-    renderBitmapString(200.0f, 30.0f, GLUT_BITMAP_HELVETICA_18, "261053234");
+    const char* score = "SCORE";
+    const char* lives = "LIVES";
+    const char* studentID = "261053234";
+
+    // Dividing up the width into 3 subcells
+    float thirdWidth = WIDTH / 3.0f;
+
+    // Calculate x positions to center text
+    int scoreWidth = calculateStringWidth(GLUT_BITMAP_HELVETICA_18, score);
+    int livesWidth = calculateStringWidth(GLUT_BITMAP_HELVETICA_18, lives);
+    int studentIDWidth = calculateStringWidth(GLUT_BITMAP_HELVETICA_18, studentID);
+
+    // Centering within each subcell
+    float scoreX = (thirdWidth - scoreWidth) / 2.0f;
+    float livesX = thirdWidth + (thirdWidth - livesWidth) / 2.0f;
+    float studentIDX = 2 * thirdWidth + (thirdWidth - studentIDWidth) / 2.0f;
+
+
+    // TODO: calculate the position based on the width of the screen. Center them
+    renderBitmapString(scoreX, 30.0f, GLUT_BITMAP_HELVETICA_18, score);
+    renderBitmapString(livesX, 30.0f, GLUT_BITMAP_HELVETICA_18, lives);
+    renderBitmapString(studentIDX, 30.0f, GLUT_BITMAP_HELVETICA_18, studentID);
 }
 
 // GLUT display callback function
