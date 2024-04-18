@@ -1,81 +1,81 @@
-#include <GL/glew.h>
-#include <GL/glut.h>
+// #include <GL/glew.h>
+// #include <GL/glut.h>
 
-const char* vertexShaderSource = R"(
-    #version 330 core
+// const char* vertexShaderSource = R"(
+//     #version 330 core
     
-    layout (location = 0) in vec2 aPos;
+//     layout (location = 0) in vec2 aPos;
     
-    uniform vec2 uOffset;
+//     uniform vec2 uOffset;
     
-    void main() {
-        gl_Position = vec4(aPos.x + uOffset.x, aPos.y + uOffset.y, 0.0, 1.0);
-    }
-)";
+//     void main() {
+//         gl_Position = vec4(aPos.x + uOffset.x, aPos.y + uOffset.y, 0.0, 1.0);
+//     }
+// )";
 
-const char* fragmentShaderSource = R"(
-    #version 330 core
+// const char* fragmentShaderSource = R"(
+//     #version 330 core
     
-    out vec4 FragColor;
+//     out vec4 FragColor;
     
-    void main() {
-        FragColor = vec4(1.0, 0.0, 0.0, 1.0); // Red color
-    }
-)";
+//     void main() {
+//         FragColor = vec4(1.0, 0.0, 0.0, 1.0); // Red color
+//     }
+// )";
 
-GLuint shaderProgram;
-GLint uOffsetLocation;
-GLfloat offsetX = 0.0f;
-GLfloat offsetY = 0.0f;
-const float OFFSET_INCREMENT = 0.01f;
+// GLuint shaderProgram;
+// GLint uOffsetLocation;
+// GLfloat offsetX = 0.0f;
+// GLfloat offsetY = 0.0f;
+// const float OFFSET_INCREMENT = 0.01f;
 
-void display() {
-    glClear(GL_COLOR_BUFFER_BIT);
+// void display() {
+//     glClear(GL_COLOR_BUFFER_BIT);
 
-    // Set the offset uniform in the shader
-    glUniform2f(uOffsetLocation, offsetX, offsetY);
+//     // Set the offset uniform in the shader
+//     glUniform2f(uOffsetLocation, offsetX, offsetY);
 
-    // Draw the triangle
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+//     // Draw the triangle
+//     glDrawArrays(GL_TRIANGLES, 0, 3);
 
-    glutSwapBuffers();
-}
+//     glutSwapBuffers();
+// }
 
-void keyboardFunc(unsigned char key, int x, int y) {
-    switch (key) {
-    case 'w':
-        offsetY += OFFSET_INCREMENT;
-        break;
-    case 's':
-        offsetY -= OFFSET_INCREMENT;
-        break;
-    case 'a':
-        offsetX -= OFFSET_INCREMENT;
-        break;
-    case 'd':
-        offsetX += OFFSET_INCREMENT;
-        break;
-    }
-    glutPostRedisplay();
-}
+// void keyboardFunc(unsigned char key, int x, int y) {
+//     switch (key) {
+//     case 'w':
+//         offsetY += OFFSET_INCREMENT;
+//         break;
+//     case 's':
+//         offsetY -= OFFSET_INCREMENT;
+//         break;
+//     case 'a':
+//         offsetX -= OFFSET_INCREMENT;
+//         break;
+//     case 'd':
+//         offsetX += OFFSET_INCREMENT;
+//         break;
+//     }
+//     glutPostRedisplay();
+// }
 
-void specialFunc(int key, int x, int y) {
-    switch (key) {
-    case GLUT_KEY_UP:
-        offsetY += OFFSET_INCREMENT;
-        break;
-    case GLUT_KEY_DOWN:
-        offsetY -= OFFSET_INCREMENT;
-        break;
-    case GLUT_KEY_LEFT:
-        offsetX -= OFFSET_INCREMENT;
-        break;
-    case GLUT_KEY_RIGHT:
-        offsetX += OFFSET_INCREMENT;
-        break;
-    }
-    glutPostRedisplay();
-}
+// void specialFunc(int key, int x, int y) {
+//     switch (key) {
+//     case GLUT_KEY_UP:
+//         offsetY += OFFSET_INCREMENT;
+//         break;
+//     case GLUT_KEY_DOWN:
+//         offsetY -= OFFSET_INCREMENT;
+//         break;
+//     case GLUT_KEY_LEFT:
+//         offsetX -= OFFSET_INCREMENT;
+//         break;
+//     case GLUT_KEY_RIGHT:
+//         offsetX += OFFSET_INCREMENT;
+//         break;
+//     }
+//     glutPostRedisplay();
+// }
 
 // int main(int argc, char** argv) {
 //     glutInit(&argc, argv);
