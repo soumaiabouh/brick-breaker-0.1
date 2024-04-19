@@ -29,6 +29,23 @@ int calculateStringWidth(void* font, const char* string) {
     return width;
 }
 
+// Function to enforce a minimum window size
+void reshape(int width, int height) {
+    // Check if the current size is below the minimum size
+    if (width < WIDTH || height < HEIGHT) {
+        // Reset the window size to the minimum dimensions
+        width = max(width, WIDTH);
+        height = max(height, HEIGHT);
+
+        // Resize the window to the new dimensions
+        glutReshapeWindow(width, height);
+    }
+    else {
+        // Adjust the viewport
+        glViewport(0, 0, width, height);
+    }
+}
+
 void printText() {
     const char* score = "SCORE";
     const char* lives = "LIVES";
@@ -47,8 +64,7 @@ void printText() {
     float livesX = thirdWidth + (thirdWidth - livesWidth) / 2.0f;
     float studentIDX = 2 * thirdWidth + (thirdWidth - studentIDWidth) / 2.0f;
 
-
-    // TODO: calculate the position based on the width of the screen. Center them
+    // Calculate the position based on the width of the screen. Center them
     renderBitmapString(scoreX, 30.0f, GLUT_BITMAP_HELVETICA_18, score);
     renderBitmapString(livesX, 30.0f, GLUT_BITMAP_HELVETICA_18, lives);
     renderBitmapString(studentIDX, 30.0f, GLUT_BITMAP_HELVETICA_18, studentID);
@@ -86,6 +102,8 @@ int main(int argc, char** argv) {
 
     initOpenGL();  // Initialize OpenGL settings
     glutDisplayFunc(display); // Register the display callback
+    // Register the reshape callback
+    glutReshapeFunc(reshape);
 
     glutMainLoop();
 
