@@ -1,13 +1,15 @@
 #include <GL/glew.h>
 #include <GL/glut.h>
 #include <iostream>
+#include <string>
 
-using namespace std;
 
 // Global Vars
 int WIDTH = 600;
 int HEIGHT = 700;
-string STUDENTID = "261053234"; //TODO: rename based on who's submitting it
+std::string STUDENTID = "261053234"; //TODO: rename based on who's submitting it
+int score = 0;
+int lives = 3;
 
 
 // Function to render text using GLUT's bitmap fonts
@@ -34,8 +36,8 @@ void reshape(int width, int height) {
     // Check if the current size is below the minimum size
     if (width < WIDTH || height < HEIGHT) {
         // Reset the window size to the minimum dimensions
-        width = max(width, WIDTH);
-        height = max(height, HEIGHT);
+        width = std::max(width, WIDTH);
+        height = std::max(height, HEIGHT);
 
         // Resize the window to the new dimensions
         glutReshapeWindow(width, height);
@@ -47,16 +49,19 @@ void reshape(int width, int height) {
 }
 
 void printText() {
-    const char* score = "SCORE";
-    const char* lives = "LIVES";
+    std::string score_str = "SCORE: " + std::to_string(score);
+    std::string lives_str = "LIVES: " + std::to_string(lives);
+    
+    const char* score_to_print = score_str.c_str();
+    const char* lives_to_print = lives_str.c_str();
     const char* studentID = "261053234";
 
     // Dividing up the width into 3 subcells
     float thirdWidth = WIDTH / 3.0f;
 
     // Calculate x positions to center text
-    int scoreWidth = calculateStringWidth(GLUT_BITMAP_HELVETICA_18, score);
-    int livesWidth = calculateStringWidth(GLUT_BITMAP_HELVETICA_18, lives);
+    int scoreWidth = calculateStringWidth(GLUT_BITMAP_HELVETICA_18, score_to_print);
+    int livesWidth = calculateStringWidth(GLUT_BITMAP_HELVETICA_18, lives_to_print);
     int studentIDWidth = calculateStringWidth(GLUT_BITMAP_HELVETICA_18, studentID);
 
     // Centering within each subcell
@@ -65,8 +70,8 @@ void printText() {
     float studentIDX = 2 * thirdWidth + (thirdWidth - studentIDWidth) / 2.0f;
 
     // Calculate the position based on the width of the screen. Center them
-    renderBitmapString(scoreX, 30.0f, GLUT_BITMAP_HELVETICA_18, score);
-    renderBitmapString(livesX, 30.0f, GLUT_BITMAP_HELVETICA_18, lives);
+    renderBitmapString(scoreX, 30.0f, GLUT_BITMAP_HELVETICA_18, score_to_print);
+    renderBitmapString(livesX, 30.0f, GLUT_BITMAP_HELVETICA_18, lives_to_print);
     renderBitmapString(studentIDX, 30.0f, GLUT_BITMAP_HELVETICA_18, studentID);
 }
 
@@ -97,11 +102,25 @@ void initOpenGL() {
 
 int main(int argc, char** argv) {
     glutInit(&argc, argv);
+
+    // 1. Setting the initial window position
+    // Get the screen size
+    int screenWidth = glutGet(GLUT_SCREEN_WIDTH);
+    int screenHeight = glutGet(GLUT_SCREEN_HEIGHT);
+
+    // Calculate the window's initial position to center it
+    int posX = (screenWidth - WIDTH) / 2;
+    int posY = (screenHeight - HEIGHT) / 2;
+    glutInitWindowPosition(posX, posY);
+
+    // 2. Setting the size
     glutInitWindowSize(WIDTH, HEIGHT);
     glutCreateWindow("Brick Breaker – 260979679 & 261053234");
 
     initOpenGL();  // Initialize OpenGL settings
+    
     glutDisplayFunc(display); // Register the display callback
+    
     // Register the reshape callback
     glutReshapeFunc(reshape);
 
