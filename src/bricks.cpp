@@ -75,9 +75,24 @@ void printText() {
     renderBitmapString(studentIDX, 30.0f, GLUT_BITMAP_HELVETICA_18, studentID);
 }
 
+// Function to draw a wall given bottom-left and top-right coordinates
+void drawWall(float x1, float y1, float x2, float y2) {
+    glBegin(GL_QUADS); // Begin drawing a quad
+    glVertex2f(x1, y1); // Bottom left
+    glVertex2f(x2, y1); // Bottom right
+    glVertex2f(x2, y2); // Top right
+    glVertex2f(x1, y2); // Top left
+    glEnd(); // End drawing the quad
+}
+
 // GLUT display callback function
 void display() {
     glClear(GL_COLOR_BUFFER_BIT); // Clear the screen
+    
+    // Draw walls
+    glColor3f(0.75f, 0.75f, 0.75f); // Red color for walls
+    drawWall(0.0f, 500.0f, 20.0f, 60.0f);
+
 
     // Set the color for the text
     glColor3f(1.0, 1.0, 1.0); // White color
