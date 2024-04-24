@@ -12,6 +12,11 @@ std::string STUDENTID = "261053234"; //TODO: rename based on who's submitting it
 int score = 0;
 int lives = 3;
 
+// Wall dimensions
+const int WALL_THICKNESS = 20;  // Thickness of the side walls
+const int TOP_WALL_HEIGHT = 20;  // Height of the top wall
+const float WALL_COLOR[3] = { 0.75f, 0.75f, 0.75f };  // Color for all walls
+const float WALL_HEIGHT = HEIGHT - 60.0;
 
 // Brick dimensions and spacing
 const int BRICK_ROWS = 6;
@@ -119,22 +124,27 @@ void drawRectangle(float x1, float y1, float x2, float y2) {
 
 // 2.1 WALLS
 void drawWalls() {
-    glColor3f(0.75f, 0.75f, 0.75f); // Grey color for walls
-    drawRectangle(0.0f, 640.0f, 20.0f, 60.0f);      // right wall
-    drawRectangle(580.0f, 640.0f, 600.0f, 60.0f);   // left wall
-    drawRectangle(0.0f, 60.0f, 600.0f, 40.0f);      // top wall
+    glColor3fv(WALL_COLOR);  // Set the color for walls
+    drawRectangle(0.0f, 40.0f, WALL_THICKNESS, WALL_HEIGHT);            // left wall
+    drawRectangle(WIDTH - WALL_THICKNESS, 40.0f, WIDTH, WALL_HEIGHT);   // right wall
+    drawRectangle(0.0f, 40.0f, WIDTH, 40 + TOP_WALL_HEIGHT);            // top wall
 }
 
 // 2.2 BRICKS
 void initBricks() {
-    float wallLeft = 30.0f;
-    float wallRight = 570.0f;
-    float availableWidth = wallRight - wallLeft - (BRICK_COLS - 1) * BRICK_SPACING;
+    int horizontal_margin = 20;
+    int vertical_margin = 20;
+
+    float wallTop = 40.0f + TOP_WALL_HEIGHT; // lower part of the top wall (y2)
+    float wallLeft = WALL_THICKNESS;
+    float wallRight = WIDTH - WALL_THICKNESS;
+    
+    float availableWidth = wallRight - wallLeft - ((BRICK_COLS - 1) * BRICK_SPACING) - (2 * horizontal_margin); // leaving some space between the bricks and both walls
 
     BRICK_WIDTH = availableWidth / BRICK_COLS;
 
-    float startX = wallLeft;
-    float startY = 80.0f; // Starting Y position for the bricks
+    float startX = wallLeft + horizontal_margin;
+    float startY = wallTop + vertical_margin; // Starting Y position for the bricks + added margin
 
     for (int row = 0; row < BRICK_ROWS; row++) {
         for (int col = 0; col < BRICK_COLS; col++) {
