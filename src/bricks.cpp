@@ -18,6 +18,7 @@ const int WALL_THICKNESS = 20;  // Thickness of the side walls
 const int TOP_WALL_HEIGHT = 20;  // Height of the top wall
 const float WALL_COLOR[3] = { 0.75f, 0.75f, 0.75f };  // Color for all walls
 const float WALL_HEIGHT = HEIGHT - 60.0;
+const int TOP_WALL_BOUNDARY = 40 + TOP_WALL_HEIGHT; // 40 is the starting point (0, 40)
 
 // Brick dimensions and spacing
 const int BRICK_ROWS = 6;
@@ -51,8 +52,8 @@ int rightWidth = leftWidth;
 float ball_radius = 5.0f;  // Visible size
 float ball_x = WIDTH / 2;  // Start in the middle of the screen horizontally
 float ball_y = HEIGHT / 2; // Start in the middle of the screen vertically
-float ball_dx = 0.05f;     // Initial horizontal velocity
-float ball_dy = -0.05f;    // Initial vertical velocity
+float ball_dx = 1.5f;     // Initial horizontal velocity
+float ball_dy = -1.5f;    // Initial vertical velocity
 
 
 // 1. TEXT
@@ -208,6 +209,29 @@ void draw_ball() {
     glEnd();
 }
 
+void update_ball() {
+    // Update ball position based on velocity
+    ball_x += ball_dx;
+    ball_y += ball_dy;
+
+    // Collision detection with left and right walls
+    if (ball_x - ball_radius <= WALL_THICKNESS || ball_x + ball_radius >= WIDTH - WALL_THICKNESS) {
+        ball_dx = -ball_dx; // Reverse horizontal velocity
+    }
+
+    // Collision detection with top wall
+    if (ball_y - ball_radius <= TOP_WALL_BOUNDARY) {
+        ball_dy = -ball_dy; // Reverse vertical velocity
+    }
+
+    // Check if the ball hits the bottom of the screen
+    if (ball_y + ball_radius >= 700) {
+        // Optionally, reset ball position or handle game over scenario
+        ball_x = WIDTH / 2;
+        ball_y = HEIGHT / 2;
+        ball_dy = -fabs(ball_dy); // Ensure the ball starts moving upward (fabs -> float abs)
+    }
+}
 
 
 // GLUT display callback function
@@ -221,6 +245,7 @@ void display() {
     // Dynamic elements
     drawPaddle();
     draw_ball();
+    update_ball();
 
     // Set the color for the text
     glColor3f(1.0f, 1.0f, 1.0f); // White 
@@ -272,6 +297,11 @@ void specialInput(int key, int x, int y) {
     glutPostRedisplay();
 }
 
+void timer(int value) {
+    glutPostRedisplay();  // Trigger the display function
+    glutTimerFunc(16, timer, 0);  // Set up the next call to timer after approx. 16 ms (about 60 FPS)
+}
+
 
 int main(int argc, char** argv) {
     glutInit(&argc, argv);
@@ -298,6 +328,8 @@ int main(int argc, char** argv) {
     glutReshapeFunc(reshape);
     glutKeyboardFunc(keyboardHandler);  // Register ASCII key handler
     glutSpecialFunc(specialInput);  // Register special key handler (arrow keys)
+
+    glutTimerFunc(0, timer, 0);
 
     glutMainLoop();
     return 0;
