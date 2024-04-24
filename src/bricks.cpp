@@ -20,11 +20,27 @@ float BRICK_WIDTH;  // To be calculated dynamically
 const float BRICK_HEIGHT = 20.0f;
 float BRICK_SPACING = 2.0f;  
 
-
 // Vectors to store brick properties
 std::vector<float> brick_x_positions;
 std::vector<float> brick_y_positions;
 std::vector<bool> brick_active;
+
+// Paddle dimensions and position
+int paddle_length = 96;  // Total length of the paddle
+int paddle_x = (WIDTH - paddle_length)/2;  // Starting x position
+int paddle_y = 650;  // Vertical position
+const int paddle_height = 20;  // Height of the paddle
+
+// Colors for the paddle sections
+const GLfloat leftColor[3] = { 0.7f, 0.2f, 0.2f };  // Color 2Ch approx
+const GLfloat middleColor[3] = { 0.2f, 0.3f, 0.8f };  // Color 2Dh approx
+const GLfloat rightColor[3] = { 0.8f, 0.7f, 0.2f };  // Color 2Eh approx
+
+// Segment widths
+int middleWidth = 12;
+int leftWidth = (paddle_length - middleWidth) / 2;
+int rightWidth = leftWidth; 
+
 
 // 1. TEXT
 // Function to render text using GLUT's bitmap fonts
@@ -104,8 +120,8 @@ void drawRectangle(float x1, float y1, float x2, float y2) {
 // 2.1 WALLS
 void drawWalls() {
     glColor3f(0.75f, 0.75f, 0.75f); // Grey color for walls
-    drawRectangle(0.0f, 600.0f, 20.0f, 60.0f);      // right wall
-    drawRectangle(580.0f, 600.0f, 600.0f, 60.0f);   // left wall
+    drawRectangle(0.0f, 640.0f, 20.0f, 60.0f);      // right wall
+    drawRectangle(580.0f, 640.0f, 600.0f, 60.0f);   // left wall
     drawRectangle(0.0f, 60.0f, 600.0f, 40.0f);      // top wall
 }
 
@@ -143,6 +159,24 @@ void drawBricks() {
     }
 }
 
+
+// 3. DYNAMIC ELEMENTS
+
+// 3.1 Paddle
+void drawPaddle() {
+    // Draw left section
+    glColor3fv(leftColor);
+    drawRectangle(paddle_x, paddle_y, paddle_x + leftWidth, paddle_y + paddle_height);
+
+    // Draw middle section
+    glColor3fv(middleColor);
+    drawRectangle(paddle_x + leftWidth, paddle_y, paddle_x + leftWidth + middleWidth, paddle_y + paddle_height);
+
+    // Draw right section
+    glColor3fv(rightColor);
+    drawRectangle(paddle_x + leftWidth + middleWidth, paddle_y, paddle_x + leftWidth + middleWidth + rightWidth, paddle_y + paddle_height);
+}
+
 // GLUT display callback function
 void display() {
     glClear(GL_COLOR_BUFFER_BIT); // Clear the screen
@@ -151,10 +185,11 @@ void display() {
     drawWalls();
     drawBricks();
 
-    // Set the color for the text
-    glColor3f(1.0, 1.0, 1.0); // White color
+    // Dynamic elements
+    drawPaddle();
 
-    // printing the text we want to see displayed
+    // Set the color for the text
+    glColor3f(1.0f, 1.0f, 1.0f); // White 
     printText();
 
     glutSwapBuffers(); // Swap the buffers to make it visible
@@ -171,6 +206,38 @@ void initOpenGL() {
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 }
+
+// Keyboard handling
+void keyboardHandler(unsigned char key, int x, int y) {
+    switch (key) {
+    case 'a':
+    case 'A':
+        paddle_x -= 10; // Move paddle left
+        if (paddle_x < 0) paddle_x = 0; // Keep paddle within the screen bounds
+        break;
+    case 'd':
+    case 'D':
+        paddle_x += 10; // Move paddle right
+        if (paddle_x > WIDTH - paddle_length) paddle_x = WIDTH - paddle_length;
+        break;
+    }
+    glutPostRedisplay(); // Request display update
+}
+
+void specialInput(int key, int x, int y) {
+    switch (key) {
+    case GLUT_KEY_LEFT:
+        paddle_x -= 10;
+        if (paddle_x < 0) paddle_x = 0;
+        break;
+    case GLUT_KEY_RIGHT:
+        paddle_x += 10;
+        if (paddle_x > WIDTH - paddle_length) paddle_x = WIDTH - paddle_length;
+        break;
+    }
+    glutPostRedisplay();
+}
+
 
 int main(int argc, char** argv) {
     glutInit(&argc, argv);
@@ -193,12 +260,11 @@ int main(int argc, char** argv) {
     initOpenGL();  // Initialize OpenGL settings
     initBricks();
     
-    glutDisplayFunc(display); // Register the display callback
-    
-    // Register the reshape callback
+    glutDisplayFunc(display);
     glutReshapeFunc(reshape);
+    glutKeyboardFunc(keyboardHandler);  // Register ASCII key handler
+    glutSpecialFunc(specialInput);  // Register special key handler (arrow keys)
 
     glutMainLoop();
-
     return 0;
 }
