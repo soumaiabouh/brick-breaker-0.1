@@ -2,6 +2,7 @@
 #include <GL/glut.h>
 #include <iostream>
 #include <string>
+#include <vector>
 
 
 // Global Vars
@@ -12,6 +13,20 @@ int score = 0;
 int lives = 3;
 
 
+// Brick dimensions and spacing
+const int BRICK_ROWS = 6;
+const int BRICK_COLS = 18;
+float BRICK_WIDTH;  // To be calculated dynamically
+const float BRICK_HEIGHT = 20.0f;
+float BRICK_SPACING = 2.0f;  
+
+
+// Vectors to store brick properties
+std::vector<float> brick_x_positions;
+std::vector<float> brick_y_positions;
+std::vector<bool> brick_active;
+
+// 1. TEXT
 // Function to render text using GLUT's bitmap fonts
 void renderBitmapString(float x, float y, void* font, const char* string) {
     const char* c;
@@ -75,6 +90,7 @@ void printText() {
     renderBitmapString(studentIDX, 30.0f, GLUT_BITMAP_HELVETICA_18, studentID);
 }
 
+// 2. STATIC ELEMENTS
 // Function to draw a wall given bottom-left and top-right coordinates
 void drawRectangle(float x1, float y1, float x2, float y2) {
     glBegin(GL_QUADS); // Begin drawing a quad
@@ -85,16 +101,55 @@ void drawRectangle(float x1, float y1, float x2, float y2) {
     glEnd(); // End drawing the quad
 }
 
+// 2.1 WALLS
+void drawWalls() {
+    glColor3f(0.75f, 0.75f, 0.75f); // Grey color for walls
+    drawRectangle(0.0f, 500.0f, 20.0f, 60.0f);      // right wall
+    drawRectangle(580.0f, 500.0f, 600.0f, 60.0f);   // left wall
+    drawRectangle(0.0f, 60.0f, 600.0f, 40.0f);      // top wall
+}
+
+// 2.2 BRICKS
+void initBricks() {
+    float wallLeft = 30.0f;
+    float wallRight = 570.0f;
+    float availableWidth = wallRight - wallLeft - (BRICK_COLS - 1) * BRICK_SPACING;
+
+    BRICK_WIDTH = availableWidth / BRICK_COLS;
+
+    float startX = wallLeft;
+    float startY = 80.0f; // Starting Y position for the bricks
+
+    for (int row = 0; row < BRICK_ROWS; row++) {
+        for (int col = 0; col < BRICK_COLS; col++) {
+            float x = startX + col * (BRICK_WIDTH + BRICK_SPACING);
+            float y = startY + row * (BRICK_HEIGHT + BRICK_SPACING);
+            brick_x_positions.push_back(x);
+            brick_y_positions.push_back(y);
+            brick_active.push_back(true);
+        }
+    }
+}
+
+void drawBricks() {
+    // Draw bricks
+    glColor3f(1.0f, 0.3f, 0.3f); // Set brick color
+    for (size_t i = 0; i < brick_x_positions.size(); ++i) {
+        if (brick_active[i]) {
+            drawRectangle(brick_x_positions[i], brick_y_positions[i],
+                brick_x_positions[i] + BRICK_WIDTH,
+                brick_y_positions[i] + BRICK_HEIGHT);
+        }
+    }
+}
+
 // GLUT display callback function
 void display() {
     glClear(GL_COLOR_BUFFER_BIT); // Clear the screen
     
-    // Draw walls
-    glColor3f(0.75f, 0.75f, 0.75f); // Red color for walls
-    drawRectangle(0.0f, 500.0f, 20.0f, 60.0f);
-    drawRectangle(580.0f, 500.0f, 600.0f, 60.0f);
-    drawRectangle(0.0f, 60.0f, 600.0f, 40.0f);
-
+    // Static elements
+    drawWalls();
+    drawBricks();
 
     // Set the color for the text
     glColor3f(1.0, 1.0, 1.0); // White color
@@ -134,7 +189,9 @@ int main(int argc, char** argv) {
     glutInitWindowSize(WIDTH, HEIGHT);
     glutCreateWindow("Brick Breaker – 260979679 & 261053234");
 
+    // 3. Initialization
     initOpenGL();  // Initialize OpenGL settings
+    initBricks();
     
     glutDisplayFunc(display); // Register the display callback
     
