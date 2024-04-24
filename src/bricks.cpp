@@ -76,7 +76,7 @@ void printText() {
 }
 
 // Function to draw a wall given bottom-left and top-right coordinates
-void drawWall(float x1, float y1, float x2, float y2) {
+void drawRectangle(float x1, float y1, float x2, float y2) {
     glBegin(GL_QUADS); // Begin drawing a quad
     glVertex2f(x1, y1); // Bottom left
     glVertex2f(x2, y1); // Bottom right
@@ -91,9 +91,9 @@ void display() {
     
     // Draw walls
     glColor3f(0.75f, 0.75f, 0.75f); // Red color for walls
-    drawWall(0.0f, 500.0f, 20.0f, 60.0f);
-    drawWall(580.0f, 500.0f, 600.0f, 60.0f);
-    drawWall(0.0f, 60.0f, 600.0f, 40.0f);
+    drawRectangle(0.0f, 500.0f, 20.0f, 60.0f);
+    drawRectangle(580.0f, 500.0f, 600.0f, 60.0f);
+    drawRectangle(0.0f, 60.0f, 600.0f, 40.0f);
 
 
     // Set the color for the text
