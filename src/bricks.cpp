@@ -104,8 +104,8 @@ void drawRectangle(float x1, float y1, float x2, float y2) {
 // 2.1 WALLS
 void drawWalls() {
     glColor3f(0.75f, 0.75f, 0.75f); // Grey color for walls
-    drawRectangle(0.0f, 500.0f, 20.0f, 60.0f);      // right wall
-    drawRectangle(580.0f, 500.0f, 600.0f, 60.0f);   // left wall
+    drawRectangle(0.0f, 600.0f, 20.0f, 60.0f);      // right wall
+    drawRectangle(580.0f, 600.0f, 600.0f, 60.0f);   // left wall
     drawRectangle(0.0f, 60.0f, 600.0f, 40.0f);      // top wall
 }
 
