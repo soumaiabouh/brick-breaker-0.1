@@ -92,6 +92,8 @@ void display() {
     // Draw walls
     glColor3f(0.75f, 0.75f, 0.75f); // Red color for walls
     drawWall(0.0f, 500.0f, 20.0f, 60.0f);
+    drawWall(580.0f, 500.0f, 600.0f, 60.0f);
+    drawWall(0.0f, 60.0f, 600.0f, 40.0f);
 
 
     // Set the color for the text
