@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 
+#define DEG2RAD 3.14159/180.0
 
 // Global Vars
 int WIDTH = 600;
@@ -45,6 +46,13 @@ const GLfloat rightColor[3] = { 0.8f, 0.7f, 0.2f };  // Color 2Eh approx
 int middleWidth = 12;
 int leftWidth = (paddle_length - middleWidth) / 2;
 int rightWidth = leftWidth; 
+
+// Ball properties
+float ball_radius = 5.0f;  // Visible size
+float ball_x = WIDTH / 2;  // Start in the middle of the screen horizontally
+float ball_y = HEIGHT / 2; // Start in the middle of the screen vertically
+float ball_dx = 0.05f;     // Initial horizontal velocity
+float ball_dy = -0.05f;    // Initial vertical velocity
 
 
 // 1. TEXT
@@ -187,6 +195,21 @@ void drawPaddle() {
     drawRectangle(paddle_x + leftWidth + middleWidth, paddle_y, paddle_x + leftWidth + middleWidth + rightWidth, paddle_y + paddle_height);
 }
 
+//3.2 Ball
+
+void draw_ball() {
+    glColor3f(1.0f, 1.0f, 1.0f); // White color for the ball
+    glBegin(GL_TRIANGLE_FAN);    // Begin drawing a circle
+    glVertex2f(ball_x, ball_y);  // Center of circle
+    for (int angle = 0; angle <= 360; angle++) {
+        float rad = angle * DEG2RAD; // Convert angle to radians
+        glVertex2f(ball_x + cos(rad) * ball_radius, ball_y + sin(rad) * ball_radius);
+    }
+    glEnd();
+}
+
+
+
 // GLUT display callback function
 void display() {
     glClear(GL_COLOR_BUFFER_BIT); // Clear the screen
@@ -197,6 +220,7 @@ void display() {
 
     // Dynamic elements
     drawPaddle();
+    draw_ball();
 
     // Set the color for the text
     glColor3f(1.0f, 1.0f, 1.0f); // White 
