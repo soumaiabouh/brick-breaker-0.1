@@ -18,7 +18,10 @@ const int WALL_THICKNESS = 20;  // Thickness of the side walls
 const int TOP_WALL_HEIGHT = 20;  // Height of the top wall
 const float WALL_COLOR[3] = { 0.75f, 0.75f, 0.75f };  // Color for all walls
 const float WALL_HEIGHT = HEIGHT - 60.0;
+
 const int TOP_WALL_BOUNDARY = 40 + TOP_WALL_HEIGHT; // 40 is the starting point (0, 40)
+const int LEFT_WALL_BOUNDARY = WALL_THICKNESS;
+const int RIGHT_WALL_BOUNDARY = WIDTH - WALL_THICKNESS;
 
 // Brick dimensions and spacing
 const int BRICK_ROWS = 6;
@@ -209,27 +212,54 @@ void draw_ball() {
     glEnd();
 }
 
+int checkWallCollision(int x, int y) {
+    // Check for wall collisions considering the radius of the ball
+    if (((x - ball_radius <= LEFT_WALL_BOUNDARY && y - ball_radius > TOP_WALL_BOUNDARY) ||
+        (x + ball_radius >= RIGHT_WALL_BOUNDARY && y - ball_radius > TOP_WALL_BOUNDARY))) {
+        return 1; // Ball is next to the left or right wall but not at the corner
+    }
+    if (y - ball_radius <= TOP_WALL_BOUNDARY && x > LEFT_WALL_BOUNDARY && x < RIGHT_WALL_BOUNDARY) {
+        return 2; // Ball is next to the top wall but not at the corners
+    }
+    if ((x - ball_radius <= LEFT_WALL_BOUNDARY || x + ball_radius >= RIGHT_WALL_BOUNDARY) &&
+        y - ball_radius <= TOP_WALL_BOUNDARY) {
+        return 3; // Ball is at a corner
+    }
+    return 0; // No collision
+}
+
+void handleCollisions() {
+    int collisionType = checkWallCollision(ball_x, ball_y);
+    switch (collisionType) {
+    case 1:
+        ball_dx = -ball_dx; // Invert horizontal velocity
+        break;
+    case 2:
+        ball_dy = -ball_dy; // Invert vertical velocity
+        break;
+    case 3:
+        ball_dx = -ball_dx; // Invert both horizontal
+        ball_dy = -ball_dy; // and vertical velocity
+        break;
+    }
+}
+
+
 void update_ball() {
     // Update ball position based on velocity
     ball_x += ball_dx;
     ball_y += ball_dy;
 
-    // Collision detection with left and right walls
-    if (ball_x - ball_radius <= WALL_THICKNESS || ball_x + ball_radius >= WIDTH - WALL_THICKNESS) {
-        ball_dx = -ball_dx; // Reverse horizontal velocity
-    }
-
-    // Collision detection with top wall
-    if (ball_y - ball_radius <= TOP_WALL_BOUNDARY) {
-        ball_dy = -ball_dy; // Reverse vertical velocity
-    }
+    // Handle collisions
+    handleCollisions();
 
     // Check if the ball hits the bottom of the screen
-    if (ball_y + ball_radius >= 700) {
+    // TODO: Make a separate function for this
+    if (ball_y + ball_radius >= HEIGHT) {
         // Optionally, reset ball position or handle game over scenario
         ball_x = WIDTH / 2;
         ball_y = HEIGHT / 2;
-        ball_dy = -fabs(ball_dy); // Ensure the ball starts moving upward (fabs -> float abs)
+        ball_dy = -fabs(ball_dy); // Ensure the ball starts moving upward
     }
 }
 
