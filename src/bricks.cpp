@@ -55,12 +55,12 @@ int rightWidth = leftWidth;
 float ball_radius = 5.0f;  // Visible size
 float ball_x = WIDTH / 2;  // Start in the middle of the screen horizontally
 float ball_y = HEIGHT / 2; // Start in the middle of the screen vertically
-float ball_dx = 4.5f;     // Initial horizontal velocity
-float ball_dy = -4.5f;    // Initial vertical velocity
+float ball_dx = 2.5f;     // Initial horizontal velocity
+float ball_dy = -2.5f;    // Initial vertical velocity
 
 // Flags
 bool life_lost = false;
-bool isPaused = false;
+bool is_paused = false;
 bool gameOver = false;
 
 // 0. Helper functions
@@ -152,6 +152,25 @@ void printGameOverText() {
     glColor3f(1.0f, 0.0f, 0.0f); // Red color for the game over text
     renderBitmapString(textX, textY, GLUT_BITMAP_HELVETICA_18, gameOverText);
 }
+
+void printGameOverOptions() {
+    const char* gameOverOptions = "Press [r] to restart or [q] to quit";
+    float optionsWidth = calculateStringWidth(GLUT_BITMAP_9_BY_15, gameOverOptions);
+    float optionsX = (WIDTH - optionsWidth) / 2;
+    float optionsY = HEIGHT / 2 + 50; // Below the game over text
+    glColor3f(1.0f, 1.0f, 1.0f); // White color for the text
+    renderBitmapString(optionsX, optionsY, GLUT_BITMAP_9_BY_15, gameOverOptions);
+}
+
+void printPressKeyToContinue() {
+    const char* continueMessage = "Press any key to continue";
+    float messageWidth = calculateStringWidth(GLUT_BITMAP_9_BY_15, continueMessage);
+    float messageX = (WIDTH - messageWidth) / 2;
+    float messageY = HEIGHT / 2 + 50; // Below the score or any other central message
+    glColor3f(1.0f, 1.0f, 1.0f); // White color for the text
+    renderBitmapString(messageX, messageY, GLUT_BITMAP_9_BY_15, continueMessage);
+}
+
 
 // 2. STATIC ELEMENTS
 // 2.1 WALLS
@@ -284,7 +303,7 @@ int resetAfterBallLoss() {
 
 
 void update_ball() {
-    if (gameOver || isPaused) {
+    if (gameOver || is_paused) {
         return;  // Skip updating the ball if the game is paused
     }
 
@@ -302,14 +321,14 @@ void update_ball() {
     
     // Check if a life was lost and handle pausing
     if (life_lost) {
-        isPaused = true;  // Pause the game
+        is_paused = true;  // Pause the game
     }
 
 }
 
 void restartGame() {
     gameOver = false; // Reset game over flag
-    isPaused = false; // Ensure the game is not paused
+    is_paused = false; // Ensure the game is not paused
     lives = 3; // Reset lives
     score = 0; // Reset score
     // Reset ball and paddle positions
@@ -341,7 +360,10 @@ void display() {
     // Check if the game is over and display the game over text
     if (gameOver) {
         printGameOverText(); // Keep printing the game over text
-        // TODO: key press to exit and eventually another key press to restart
+        printGameOverOptions();
+    } 
+    else if (life_lost) {
+        printPressKeyToContinue(); // Function to print press any key to continue
     }
 
     glutSwapBuffers(); // Swap the buffers to make it visible
@@ -365,11 +387,15 @@ void keyboardHandler(unsigned char key, int x, int y) {
         if (key == 'r' || key == 'R') {
             restartGame(); // Reset the game state
         }
+        else if (key == 'q' || key == 'Q') {
+            std::cout << "Exiting game." << std::endl;
+            exit(0); // Exit the program
+        }
         return; // Skip other inputs if the game is over
     }
     
-    if (isPaused) {
-        isPaused = false; // Unpause the game on any key press
+    if (is_paused) {
+        is_paused = false; // Unpause the game on any key press
         life_lost = false; // Reset life lost flag
     }
 
@@ -389,8 +415,8 @@ void keyboardHandler(unsigned char key, int x, int y) {
 }
 
 void specialInput(int key, int x, int y) {
-    if (isPaused) {
-        isPaused = false; // Unpause the game on any key press
+    if (is_paused) {
+        is_paused = false; // Unpause the game on any key press
         life_lost = false; // Reset life lost flag
     }
 
