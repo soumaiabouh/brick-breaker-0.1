@@ -55,8 +55,8 @@ int rightWidth = leftWidth;
 float ball_radius = 5.0f;  // Visible size
 float ball_x = WIDTH / 2;  // Start in the middle of the screen horizontally
 float ball_y = HEIGHT / 2; // Start in the middle of the screen vertically
-float ball_dx = 2.5f;     // Initial horizontal velocity
-float ball_dy = -2.5f;    // Initial vertical velocity
+float ball_dx = 4.5f;     // Initial horizontal velocity
+float ball_dy = -4.5f;    // Initial vertical velocity
 
 // Flags
 bool life_lost = false;
@@ -143,7 +143,7 @@ void printText() {
     renderBitmapString(studentIDX, 30.0f, GLUT_BITMAP_HELVETICA_18, studentID);
 }
 
-void printGameOver() {
+void printGameOverText() {
     gameOver = true; // Set game over flag
     const char* gameOverText = "Game Over!";
     float textWidth = calculateStringWidth(GLUT_BITMAP_HELVETICA_18, gameOverText);
@@ -274,9 +274,9 @@ int resetAfterBallLoss() {
             ball_dy = -fabs(ball_dy); // Reset the ball's vertical direction upward
         }
         else {
-            // If no lives left, show Game Over
-            printGameOver(); // This will display the game over message
-            return 0; // Signal that the game is over
+            // If no lives left, signal Game Over
+            gameOver = true;
+            return 0; 
         }
     }
     return lives;
@@ -284,7 +284,7 @@ int resetAfterBallLoss() {
 
 
 void update_ball() {
-    if (isPaused) {
+    if (gameOver || isPaused) {
         return;  // Skip updating the ball if the game is paused
     }
 
@@ -307,6 +307,19 @@ void update_ball() {
 
 }
 
+void restartGame() {
+    gameOver = false; // Reset game over flag
+    isPaused = false; // Ensure the game is not paused
+    lives = 3; // Reset lives
+    score = 0; // Reset score
+    // Reset ball and paddle positions
+    ball_x = WIDTH / 2;
+    ball_y = HEIGHT / 2;
+    ball_dy = -fabs(ball_dy); // going upwards
+    paddle_x = (WIDTH - paddle_length) / 2;
+    initBricks(); // Reinitialize the bricks
+}
+
 
 // GLUT display callback function
 void display() {
@@ -327,7 +340,7 @@ void display() {
 
     // Check if the game is over and display the game over text
     if (gameOver) {
-        printGameOver(); // Keep printing the game over text
+        printGameOverText(); // Keep printing the game over text
         // TODO: key press to exit and eventually another key press to restart
     }
 
@@ -348,6 +361,13 @@ void initOpenGL() {
 
 // Keyboard handling
 void keyboardHandler(unsigned char key, int x, int y) {
+    if (gameOver) {
+        if (key == 'r' || key == 'R') {
+            restartGame(); // Reset the game state
+        }
+        return; // Skip other inputs if the game is over
+    }
+    
     if (isPaused) {
         isPaused = false; // Unpause the game on any key press
         life_lost = false; // Reset life lost flag
