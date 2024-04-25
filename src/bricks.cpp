@@ -55,8 +55,10 @@ int rightWidth = leftWidth;
 float ball_radius = 5.0f;  // Visible size
 float ball_x = WIDTH / 2;  // Start in the middle of the screen horizontally
 float ball_y = HEIGHT / 2; // Start in the middle of the screen vertically
-float ball_dx = 2.5f;     // Initial horizontal velocity
-float ball_dy = -2.5f;    // Initial vertical velocity
+const float DX = 2.5f;
+const float DY = -2.5f;
+float ball_dx = DX;     // Initial horizontal velocity
+float ball_dy = DY;    // Initial vertical velocity
 
 // Flags
 bool life_lost = false;
@@ -265,6 +267,25 @@ int checkWallCollision(int x, int y) {
     return 0; // No collision
 }
 
+int checkPaddleCollision() {
+    if (ball_y + ball_radius >= paddle_y && ball_y + ball_radius <= paddle_y + paddle_height) {
+        int leftSectionEnd = paddle_x + leftWidth;
+        int middleSectionEnd = leftSectionEnd + middleWidth;
+
+        if (ball_x >= paddle_x && ball_x < leftSectionEnd) {
+            return 1;  // Ball is above the left section
+        }
+        else if (ball_x >= leftSectionEnd && ball_x < middleSectionEnd) {
+            return 2;  // Ball is above the middle section
+        }
+        else if (ball_x >= middleSectionEnd && ball_x < paddle_x + paddle_length) {
+            return 3;  // Ball is above the right section
+        }
+    }
+    return 0;  // Ball is not above the paddle
+}
+
+
 void handleCollisions() {
     int collisionType = checkWallCollision(ball_x, ball_y);
     switch (collisionType) {
@@ -279,6 +300,28 @@ void handleCollisions() {
         ball_dy = -ball_dy; // and vertical velocity
         break;
     }
+
+    // Check for collision with the paddle
+    int paddleCollision = checkPaddleCollision();
+    switch (paddleCollision) {
+    case 1:  // Collision with left section
+        ball_dy = -fabs(DY);  
+        ball_dx = -fabs(DX);  
+        break;
+    case 2:  // Collision with middle section
+        ball_dx = 0.0f;
+        ball_dy = -fabs(DY); 
+        break;
+    case 3:  // Collision with right section
+        ball_dy = -fabs(DY);  
+        ball_dx = fabs(DX);     
+        break;
+    default:
+        // No collision, proceed as normal
+        break;
+    }
+
+
 }
 
 int resetAfterBallLoss() {
@@ -306,13 +349,12 @@ void updateBall() {
     if (gameOver || is_paused) {
         return;  // Skip updating the ball if the game is paused
     }
+    // Handle collisions
+    handleCollisions();
 
     // Update ball position based on velocity
     ball_x += ball_dx;
     ball_y += ball_dy;
-
-    // Handle collisions
-    handleCollisions();
 
     life_lost = false; // set to false
     
