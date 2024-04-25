@@ -58,6 +58,10 @@ float ball_y = HEIGHT / 2; // Start in the middle of the screen vertically
 float ball_dx = 2.5f;     // Initial horizontal velocity
 float ball_dy = -2.5f;    // Initial vertical velocity
 
+// Flags
+bool life_lost = false;
+bool isPaused = false;
+bool gameOver = false;
 
 // 0. Helper functions
 // Function to draw a wall given bottom-left and top-right coordinates
@@ -74,8 +78,6 @@ void decreaseLives() {
     lives--;
 }
 
-// 1. TEXT
-// Function to render text using GLUT's bitmap fonts
 void renderBitmapString(float x, float y, void* font, const char* string) {
     const char* c;
     glRasterPos2f(x, y);
@@ -111,6 +113,9 @@ void reshape(int width, int height) {
     }
 }
 
+
+// 1. TEXT
+// Function to render text using GLUT's bitmap fonts
 void printText() {
     std::string score_str = "SCORE: " + std::to_string(score);
     std::string lives_str = "LIVES: " + std::to_string(lives);
@@ -136,6 +141,16 @@ void printText() {
     renderBitmapString(scoreX, 30.0f, GLUT_BITMAP_HELVETICA_18, score_to_print);
     renderBitmapString(livesX, 30.0f, GLUT_BITMAP_HELVETICA_18, lives_to_print);
     renderBitmapString(studentIDX, 30.0f, GLUT_BITMAP_HELVETICA_18, studentID);
+}
+
+void printGameOver() {
+    gameOver = true; // Set game over flag
+    const char* gameOverText = "Game Over!";
+    float textWidth = calculateStringWidth(GLUT_BITMAP_HELVETICA_18, gameOverText);
+    float textX = (WIDTH - textWidth) / 2; // Center the text horizontally
+    float textY = HEIGHT / 2; // Position the text vertically in the middle
+    glColor3f(1.0f, 0.0f, 0.0f); // Red color for the game over text
+    renderBitmapString(textX, textY, GLUT_BITMAP_HELVETICA_18, gameOverText);
 }
 
 // 2. STATIC ELEMENTS
@@ -249,19 +264,30 @@ void handleCollisions() {
 
 int resetAfterBallLoss() {
     if (ball_y + ball_radius >= HEIGHT) {
-        // Optionally, reset ball position or handle game over scenario
-        ball_x = WIDTH / 2;
-        ball_y = HEIGHT / 2;
-        ball_dy = -fabs(ball_dy); // Ensure the ball starts moving upward
-        
-        decreaseLives();
-    }
+        decreaseLives(); // Decrement the lives
+        life_lost = true;
 
+        if (lives > 0) {
+            // Reset the ball position
+            ball_x = WIDTH / 2;
+            ball_y = HEIGHT / 2;
+            ball_dy = -fabs(ball_dy); // Reset the ball's vertical direction upward
+        }
+        else {
+            // If no lives left, show Game Over
+            printGameOver(); // This will display the game over message
+            return 0; // Signal that the game is over
+        }
+    }
     return lives;
 }
 
 
 void update_ball() {
+    if (isPaused) {
+        return;  // Skip updating the ball if the game is paused
+    }
+
     // Update ball position based on velocity
     ball_x += ball_dx;
     ball_y += ball_dy;
@@ -269,8 +295,15 @@ void update_ball() {
     // Handle collisions
     handleCollisions();
 
+    life_lost = false; // set to false
+    
     // Check if the ball hits the bottom of the screen
     resetAfterBallLoss();
+    
+    // Check if a life was lost and handle pausing
+    if (life_lost) {
+        isPaused = true;  // Pause the game
+    }
 
 }
 
@@ -292,6 +325,12 @@ void display() {
     glColor3f(1.0f, 1.0f, 1.0f); // White 
     printText();
 
+    // Check if the game is over and display the game over text
+    if (gameOver) {
+        printGameOver(); // Keep printing the game over text
+        // TODO: key press to exit and eventually another key press to restart
+    }
+
     glutSwapBuffers(); // Swap the buffers to make it visible
 }
 
@@ -309,6 +348,11 @@ void initOpenGL() {
 
 // Keyboard handling
 void keyboardHandler(unsigned char key, int x, int y) {
+    if (isPaused) {
+        isPaused = false; // Unpause the game on any key press
+        life_lost = false; // Reset life lost flag
+    }
+
     switch (key) {
     case 'a':
     case 'A':
@@ -325,6 +369,11 @@ void keyboardHandler(unsigned char key, int x, int y) {
 }
 
 void specialInput(int key, int x, int y) {
+    if (isPaused) {
+        isPaused = false; // Unpause the game on any key press
+        life_lost = false; // Reset life lost flag
+    }
+
     switch (key) {
     case GLUT_KEY_LEFT:
         paddle_x -= 10;
