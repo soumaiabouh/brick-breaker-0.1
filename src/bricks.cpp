@@ -55,8 +55,8 @@ int rightWidth = leftWidth;
 float ball_radius = 5.0f;  // Visible size
 float ball_x = WIDTH / 2;  // Start in the middle of the screen horizontally
 float ball_y = HEIGHT / 2; // Start in the middle of the screen vertically
-const float DX = 2.5f;
-const float DY = -2.5f;
+const float DX = 3.5f;
+const float DY = -3.5f;
 float ball_dx = DX;     // Initial horizontal velocity
 float ball_dy = DY;    // Initial vertical velocity
 
@@ -272,6 +272,7 @@ int checkPaddleCollision() {
         int leftSectionEnd = paddle_x + leftWidth;
         int middleSectionEnd = leftSectionEnd + middleWidth;
 
+        // TODO: fix bug 
         if (ball_x >= paddle_x && ball_x < leftSectionEnd) {
             return 1;  // Ball is above the left section
         }
@@ -285,10 +286,66 @@ int checkPaddleCollision() {
     return 0;  // Ball is not above the paddle
 }
 
+int checkBrickCollision(float& ball_x, float& ball_y, float& ball_dx, float& ball_dy) {
+    int collisionType = 0;
+    for (size_t i = 0; i < brick_x_positions.size(); ++i) {
+        if (brick_active[i]) {
+            float brickLeft = brick_x_positions[i];
+            float brickRight = brickLeft + BRICK_WIDTH;
+            float brickTop = brick_y_positions[i];
+            float brickBottom = brickTop + BRICK_HEIGHT;
+
+            // Check collision with the ball
+            if (ball_x + ball_radius > brickLeft && ball_x - ball_radius < brickRight &&
+                ball_y + ball_radius > brickTop && ball_y - ball_radius < brickBottom) {
+                // Determine points by row
+                int row = i / BRICK_COLS;
+                if (row < 2) score += 5;       // Top two rows
+                else if (row < 4) score += 3;  // Middle two rows
+                else score += 1;               // Bottom two rows
+
+                brick_active[i] = false;  // Remove the brick
+
+                // Determine side of collision
+                bool hitVertical = ((ball_x + ball_radius) > brickLeft && (ball_x - ball_radius) < brickRight);
+                bool hitHorizontal = ((ball_y + ball_radius) > brickTop && (ball_y - ball_radius) < brickBottom);
+
+                if (hitVertical && !hitHorizontal) {
+                    collisionType = std::max(collisionType, 1); // Side
+                }
+                else if (!hitVertical && hitHorizontal) {
+                    collisionType = std::max(collisionType, 2); // Top/Bottom
+                }
+                else if (hitVertical && hitHorizontal) {
+                    collisionType = std::max(collisionType, 3); // Corner
+                }
+
+                // Since a brick is hit, no need to check further
+                break;
+            }
+        }
+    }
+    return collisionType;
+}
+
 
 void handleCollisions() {
     int collisionType = checkWallCollision(ball_x, ball_y);
     switch (collisionType) {
+    case 1:
+        ball_dx = -ball_dx; // Invert horizontal velocity
+        break;
+    case 2:
+        ball_dy = -ball_dy; // Invert vertical velocity
+        break;
+    case 3:
+        ball_dx = -ball_dx; // Invert both horizontal
+        ball_dy = -ball_dy; // and vertical velocity
+        break;
+    }
+
+    int brickCollision = checkBrickCollision(ball_x, ball_y, ball_dx, ball_dy);
+    switch (brickCollision) {
     case 1:
         ball_dx = -ball_dx; // Invert horizontal velocity
         break;
