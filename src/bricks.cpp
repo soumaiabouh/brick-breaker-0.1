@@ -334,6 +334,8 @@ int resetAfterBallLoss() {
             ball_x = WIDTH / 2;
             ball_y = HEIGHT / 2;
             ball_dy = -fabs(ball_dy); // Reset the ball's vertical direction upward
+            // Reset paddle position
+            paddle_x = (WIDTH - paddle_length) / 2;
         }
         else {
             // If no lives left, signal Game Over
