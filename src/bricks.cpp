@@ -55,9 +55,24 @@ int rightWidth = leftWidth;
 float ball_radius = 5.0f;  // Visible size
 float ball_x = WIDTH / 2;  // Start in the middle of the screen horizontally
 float ball_y = HEIGHT / 2; // Start in the middle of the screen vertically
-float ball_dx = 1.5f;     // Initial horizontal velocity
-float ball_dy = -1.5f;    // Initial vertical velocity
+float ball_dx = 2.5f;     // Initial horizontal velocity
+float ball_dy = -2.5f;    // Initial vertical velocity
 
+
+// 0. Helper functions
+// Function to draw a wall given bottom-left and top-right coordinates
+void drawRectangle(float x1, float y1, float x2, float y2) {
+    glBegin(GL_QUADS); // Begin drawing a quad
+    glVertex2f(x1, y1); // Bottom left
+    glVertex2f(x2, y1); // Bottom right
+    glVertex2f(x2, y2); // Top right
+    glVertex2f(x1, y2); // Top left
+    glEnd(); // End drawing the quad
+}
+
+void decreaseLives() {
+    lives--;
+}
 
 // 1. TEXT
 // Function to render text using GLUT's bitmap fonts
@@ -124,16 +139,6 @@ void printText() {
 }
 
 // 2. STATIC ELEMENTS
-// Function to draw a wall given bottom-left and top-right coordinates
-void drawRectangle(float x1, float y1, float x2, float y2) {
-    glBegin(GL_QUADS); // Begin drawing a quad
-    glVertex2f(x1, y1); // Bottom left
-    glVertex2f(x2, y1); // Bottom right
-    glVertex2f(x2, y2); // Top right
-    glVertex2f(x1, y2); // Top left
-    glEnd(); // End drawing the quad
-}
-
 // 2.1 WALLS
 void drawWalls() {
     glColor3fv(WALL_COLOR);  // Set the color for walls
@@ -183,7 +188,6 @@ void drawBricks() {
 
 
 // 3. DYNAMIC ELEMENTS
-
 // 3.1 Paddle
 void drawPaddle() {
     // Draw left section
@@ -200,7 +204,6 @@ void drawPaddle() {
 }
 
 //3.2 Ball
-
 void draw_ball() {
     glColor3f(1.0f, 1.0f, 1.0f); // White color for the ball
     glBegin(GL_TRIANGLE_FAN);    // Begin drawing a circle
@@ -244,6 +247,19 @@ void handleCollisions() {
     }
 }
 
+int resetAfterBallLoss() {
+    if (ball_y + ball_radius >= HEIGHT) {
+        // Optionally, reset ball position or handle game over scenario
+        ball_x = WIDTH / 2;
+        ball_y = HEIGHT / 2;
+        ball_dy = -fabs(ball_dy); // Ensure the ball starts moving upward
+        
+        decreaseLives();
+    }
+
+    return lives;
+}
+
 
 void update_ball() {
     // Update ball position based on velocity
@@ -254,13 +270,8 @@ void update_ball() {
     handleCollisions();
 
     // Check if the ball hits the bottom of the screen
-    // TODO: Make a separate function for this
-    if (ball_y + ball_radius >= HEIGHT) {
-        // Optionally, reset ball position or handle game over scenario
-        ball_x = WIDTH / 2;
-        ball_y = HEIGHT / 2;
-        ball_dy = -fabs(ball_dy); // Ensure the ball starts moving upward
-    }
+    resetAfterBallLoss();
+
 }
 
 
