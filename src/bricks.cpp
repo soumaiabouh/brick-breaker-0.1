@@ -238,7 +238,7 @@ void drawPaddle() {
 }
 
 //3.2 Ball
-void draw_ball() {
+void drawBall() {
     glColor3f(1.0f, 1.0f, 1.0f); // White color for the ball
     glBegin(GL_TRIANGLE_FAN);    // Begin drawing a circle
     glVertex2f(ball_x, ball_y);  // Center of circle
@@ -302,7 +302,7 @@ int resetAfterBallLoss() {
 }
 
 
-void update_ball() {
+void updateBall() {
     if (gameOver || is_paused) {
         return;  // Skip updating the ball if the game is paused
     }
@@ -350,8 +350,8 @@ void display() {
 
     // Dynamic elements
     drawPaddle();
-    draw_ball();
-    update_ball();
+    drawBall();
+    updateBall();
 
     // Set the color for the text
     glColor3f(1.0f, 1.0f, 1.0f); // White 
