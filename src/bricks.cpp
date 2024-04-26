@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <cmath>
 
 #define DEG2RAD 3.14159/180.0
 
@@ -36,7 +37,7 @@ std::vector<float> brick_y_positions;
 std::vector<bool> brick_active;
 
 // Paddle dimensions and position
-int paddle_length = 96;  // Total length of the paddle
+int paddle_length = 64;  // Total length of the paddle
 int paddle_x = (WIDTH - paddle_length)/2;  // Starting x position
 int paddle_y = 650;  // Vertical position
 const int paddle_height = 20;  // Height of the paddle
