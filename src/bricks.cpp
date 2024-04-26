@@ -52,13 +52,13 @@ int leftWidth = (paddle_length - middleWidth) / 2;
 int rightWidth = leftWidth; 
 
 // Ball properties
-float ball_radius = 5.0f;  // Visible size
-float ball_x = WIDTH / 2;  // Start in the middle of the screen horizontally
-float ball_y = HEIGHT / 2; // Start in the middle of the screen vertically
-const float DX = 3.5f;
-const float DY = -3.5f;
-float ball_dx = DX;     // Initial horizontal velocity
-float ball_dy = DY;    // Initial vertical velocity
+float ball_radius = 5.0f;   // Visible size
+float ball_x = WIDTH / 2;   // Start in the middle of the screen horizontally
+float ball_y = HEIGHT / 2;  // Start in the middle of the screen vertically
+const float DX = 3.5f;      // X component of the velocity of the ball for the rest of the game when certain conditions are met
+const float DY = -3.5f;     // Y component of the velocity of the ball for the rest of the game when certain conditions are met
+float ball_dx = 0.0f;       // Initial horizontal velocity
+float ball_dy = DY;         // Initial vertical velocity
 
 // Flags
 bool life_lost = false;
