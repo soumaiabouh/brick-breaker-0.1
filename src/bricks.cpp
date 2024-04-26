@@ -320,8 +320,7 @@ int checkBrickCollision(float& ball_x, float& ball_y, float& ball_dx, float& bal
                     collisionType = std::max(collisionType, 3); // Corner
                 }
 
-                // Since a brick is hit, no need to check further
-                break;
+                // Continue checking in case we hit multiple bricks
             }
         }
     }
