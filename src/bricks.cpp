@@ -268,18 +268,18 @@ int checkWallCollision(int x, int y) {
 }
 
 int checkPaddleCollision() {
+
     if (ball_y + ball_radius >= paddle_y && ball_y + ball_radius <= paddle_y + paddle_height) {
         int leftSectionEnd = paddle_x + leftWidth;
         int middleSectionEnd = leftSectionEnd + middleWidth;
 
-        // TODO: fix bug 
-        if (ball_x >= paddle_x && ball_x < leftSectionEnd) {
+        if (ball_x + ball_radius >= paddle_x && ball_x < leftSectionEnd) {
             return 1;  // Ball is above the left section
         }
         else if (ball_x >= leftSectionEnd && ball_x < middleSectionEnd) {
             return 2;  // Ball is above the middle section
         }
-        else if (ball_x >= middleSectionEnd && ball_x < paddle_x + paddle_length) {
+        else if (ball_x >= middleSectionEnd && ball_x - ball_radius < paddle_x + paddle_length) {
             return 3;  // Ball is above the right section
         }
     }
