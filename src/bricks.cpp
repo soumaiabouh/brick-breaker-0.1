@@ -26,7 +26,7 @@ const int RIGHT_WALL_BOUNDARY = WIDTH - WALL_THICKNESS;
 
 // Brick dimensions and spacing
 const int BRICK_ROWS = 6;
-const int BRICK_COLS = 5;
+const int BRICK_COLS = 18;
 float BRICK_WIDTH;  // To be calculated dynamically
 const float BRICK_HEIGHT = 20.0f;
 float BRICK_SPACING = 2.0f;
