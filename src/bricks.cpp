@@ -26,7 +26,7 @@ const int RIGHT_WALL_BOUNDARY = WIDTH - WALL_THICKNESS;
 
 // Brick dimensions and spacing
 const int BRICK_ROWS = 6;
-const int BRICK_COLS = 18;
+const int BRICK_COLS = 5;
 float BRICK_WIDTH;  // To be calculated dynamically
 const float BRICK_HEIGHT = 20.0f;
 float BRICK_SPACING = 2.0f;
@@ -185,6 +185,14 @@ void printPressKeyToContinue() {
     renderBitmapString(messageX, messageY, GLUT_BITMAP_9_BY_15, continueMessage);
 }
 
+void printWinMessage() {
+    const char* winText = "You Won!";
+    float textWidth = calculateStringWidth(GLUT_BITMAP_HELVETICA_18, winText);
+    float textX = (WIDTH - textWidth) / 2;
+    float textY = HEIGHT / 2 - 50; // Position it above the game over options
+    glColor3f(0.0f, 1.0f, 0.0f);  // Green color for the win text
+    renderBitmapString(textX, textY, GLUT_BITMAP_HELVETICA_18, winText);
+}
 
 // 2. STATIC ELEMENTS
 // 2.1 WALLS
@@ -234,6 +242,12 @@ void drawBricks() {
     }
 }
 
+bool allBricksDestroyed() {
+    for (bool active : brick_active) {
+        if (active) return false;
+    }
+    return true;
+}
 
 // 3. DYNAMIC ELEMENTS
 // 3.0 Restart
@@ -529,6 +543,11 @@ void updateBall() {
     // Handle collisions
     handleCollisions();
 
+    if (allBricksDestroyed()) {
+        gameOver = true;
+        is_paused = true;  // Stop the game
+    }
+
     // Update ball position based on velocity
     ball_x += ball_dx;
     ball_y += ball_dy;
@@ -565,7 +584,12 @@ void display() {
 
     // Check if the game is over and display the game over text
     if (gameOver) {
-        printGameOverText(); // Keep printing the game over text
+        if (allBricksDestroyed()) {
+            printWinMessage();
+        }
+        else {
+            printGameOverText();
+        }
         printGameOverOptions();
     }
     else if (life_lost) {
