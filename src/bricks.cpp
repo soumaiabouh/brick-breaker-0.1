@@ -29,7 +29,7 @@ const int BRICK_ROWS = 6;
 const int BRICK_COLS = 18;
 float BRICK_WIDTH;  // To be calculated dynamically
 const float BRICK_HEIGHT = 20.0f;
-float BRICK_SPACING = 2.0f;  
+float BRICK_SPACING = 2.0f;
 
 // Vectors to store brick properties
 std::vector<float> brick_x_positions;
@@ -38,7 +38,7 @@ std::vector<bool> brick_active;
 
 // Paddle dimensions and position
 int paddle_length = 64;  // Total length of the paddle
-int paddle_x = (WIDTH - paddle_length)/2;  // Starting x position
+int paddle_x = (WIDTH - paddle_length) / 2;  // Starting x position
 int paddle_y = 650;  // Vertical position
 const int paddle_height = 20;  // Height of the paddle
 
@@ -50,7 +50,7 @@ const GLfloat rightColor[3] = { 0.8f, 0.7f, 0.2f };  // Color 2Eh approx
 // Segment widths
 int middleWidth = 12;
 int leftWidth = (paddle_length - middleWidth) / 2;
-int rightWidth = leftWidth; 
+int rightWidth = leftWidth;
 
 // Ball properties
 float ball_radius = 5.0f;   // Visible size
@@ -65,6 +65,17 @@ float ball_dy = DY;         // Initial vertical velocity
 bool life_lost = false;
 bool is_paused = false;
 bool gameOver = false;
+// Paddle flags
+bool leftKeyPressed = false;      // tracks paddle movement to the left
+bool rightKeyPressed = false;     // tracks paddle movement to the right
+bool leftArrowPressed = false;
+bool rightArrowPressed = false;
+// Paddle speed
+const float speed = 250.0f;  // Adjust this speed based on testing
+
+// Global or static variables to track time
+float lastFrameTime = 0.0;
+float currentFrameTime = 0.0;
 
 // 0. Helper functions
 // Function to draw a wall given bottom-left and top-right coordinates
@@ -122,7 +133,7 @@ void reshape(int width, int height) {
 void printText() {
     std::string score_str = "SCORE: " + std::to_string(score);
     std::string lives_str = "LIVES: " + std::to_string(lives);
-    
+
     const char* score_to_print = score_str.c_str();
     const char* lives_to_print = lives_str.c_str();
     const char* studentID = "261053234";
@@ -192,7 +203,7 @@ void initBricks() {
     float wallTop = 40.0f + TOP_WALL_HEIGHT; // lower part of the top wall (y2)
     float wallLeft = WALL_THICKNESS;
     float wallRight = WIDTH - WALL_THICKNESS;
-    
+
     float availableWidth = wallRight - wallLeft - ((BRICK_COLS - 1) * BRICK_SPACING) - (2 * horizontal_margin); // leaving some space between the bricks and both walls
 
     BRICK_WIDTH = availableWidth / BRICK_COLS;
@@ -225,6 +236,21 @@ void drawBricks() {
 
 
 // 3. DYNAMIC ELEMENTS
+// 3.0 Restart
+void restartGame() {
+    gameOver = false; // Reset game over flag
+    is_paused = false; // Ensure the game is not paused
+    lives = 3; // Reset lives
+    score = 0; // Reset score
+    // Reset ball and paddle positions
+    ball_x = WIDTH / 2;
+    ball_y = HEIGHT / 2;
+    ball_dx = 0.0f;
+    ball_dy = -fabs(ball_dy); // going upwards
+    paddle_x = (WIDTH - paddle_length) / 2;
+    initBricks(); // Reinitialize the bricks
+}
+
 // 3.1 Paddle
 void drawPaddle() {
     // Draw left section
@@ -239,6 +265,100 @@ void drawPaddle() {
     glColor3fv(rightColor);
     drawRectangle(paddle_x + leftWidth + middleWidth, paddle_y, paddle_x + leftWidth + middleWidth + rightWidth, paddle_y + paddle_height);
 }
+
+void updatePaddle(float deltaTime) {
+    float moveAmount = speed * deltaTime;
+
+    if (leftKeyPressed || leftArrowPressed) {
+        paddle_x -= moveAmount;
+        if (paddle_x < 0) paddle_x = 0;
+    }
+    if (rightKeyPressed || rightArrowPressed) {
+        paddle_x += moveAmount;
+        if (paddle_x > WIDTH - paddle_length) paddle_x = WIDTH - paddle_length;
+    }
+}
+
+// Keyboard handling
+void keyboardHandler(unsigned char key, int x, int y) {
+    if (gameOver) {
+        if (key == 'r' || key == 'R') {
+            restartGame(); // Reset the game state
+        }
+        else if (key == 'q' || key == 'Q') {
+            std::cout << "Exiting game." << std::endl;
+            exit(0); // Exit the program
+        }
+        return; // Skip other inputs if the game is over
+    }
+
+    if (is_paused) {
+        is_paused = false; // Unpause the game on any key press
+        life_lost = false; // Reset life lost flag
+    }
+
+    switch (key) {
+    case 'a':
+    case 'A':
+        leftKeyPressed = true;
+        break;
+    case 'd':
+    case 'D':
+        rightKeyPressed = true;
+        break;
+    }
+}
+
+void keyboardUpHandler(unsigned char key, int x, int y) {
+    switch (key) {
+    case 'a':
+    case 'A':
+        leftKeyPressed = false;
+        break;
+    case 'd':
+    case 'D':
+        rightKeyPressed = false;
+        break;
+    }
+}
+
+void specialInput(int key, int x, int y) {
+    if (is_paused) {
+        is_paused = false; // Unpause the game on any key press
+        life_lost = false; // Reset life lost flag
+    }
+
+    switch (key) {
+    case GLUT_KEY_LEFT:
+        leftArrowPressed = true;
+        break;
+    case GLUT_KEY_RIGHT:
+        rightArrowPressed = true;
+        break;
+    }
+}
+
+void specialInputUp(int key, int x, int y) {
+    switch (key) {
+    case GLUT_KEY_LEFT:
+        leftArrowPressed = false;
+        break;
+    case GLUT_KEY_RIGHT:
+        rightArrowPressed = false;
+        break;
+    }
+}
+
+void timer(int value) {
+    currentFrameTime = glutGet(GLUT_ELAPSED_TIME) / 1000.0f;
+    float deltaTime = currentFrameTime - lastFrameTime;
+    lastFrameTime = currentFrameTime;
+
+    updatePaddle(deltaTime);
+    glutPostRedisplay();
+    glutTimerFunc(16, timer, 0);  // Set up the next call to timer after approx. 16 ms
+}
+
 
 //3.2 Ball
 void drawBall() {
@@ -328,7 +448,6 @@ int checkBrickCollision(float& ball_x, float& ball_y, float& ball_dx, float& bal
     return collisionType;
 }
 
-
 void handleCollisions() {
     int collisionType = checkWallCollision(ball_x, ball_y);
     switch (collisionType) {
@@ -362,16 +481,16 @@ void handleCollisions() {
     int paddleCollision = checkPaddleCollision();
     switch (paddleCollision) {
     case 1:  // Collision with left section
-        ball_dy = -fabs(DY);  
-        ball_dx = -fabs(DX);  
+        ball_dy = -fabs(DY);
+        ball_dx = -fabs(DX);
         break;
     case 2:  // Collision with middle section
         ball_dx = 0.0f;
-        ball_dy = -fabs(DY); 
+        ball_dy = -fabs(DY);
         break;
     case 3:  // Collision with right section
-        ball_dy = -fabs(DY);  
-        ball_dx = fabs(DX);     
+        ball_dy = -fabs(DY);
+        ball_dx = fabs(DX);
         break;
     default:
         // No collision, proceed as normal
@@ -397,12 +516,11 @@ int resetAfterBallLoss() {
         else {
             // If no lives left, signal Game Over
             gameOver = true;
-            return 0; 
+            return 0;
         }
     }
     return lives;
 }
-
 
 void updateBall() {
     if (gameOver || is_paused) {
@@ -416,10 +534,10 @@ void updateBall() {
     ball_y += ball_dy;
 
     life_lost = false; // set to false
-    
+
     // Check if the ball hits the bottom of the screen
     resetAfterBallLoss();
-    
+
     // Check if a life was lost and handle pausing
     if (life_lost) {
         is_paused = true;  // Pause the game
@@ -427,24 +545,11 @@ void updateBall() {
 
 }
 
-void restartGame() {
-    gameOver = false; // Reset game over flag
-    is_paused = false; // Ensure the game is not paused
-    lives = 3; // Reset lives
-    score = 0; // Reset score
-    // Reset ball and paddle positions
-    ball_x = WIDTH / 2;
-    ball_y = HEIGHT / 2;
-    ball_dy = -fabs(ball_dy); // going upwards
-    paddle_x = (WIDTH - paddle_length) / 2;
-    initBricks(); // Reinitialize the bricks
-}
-
 
 // GLUT display callback function
 void display() {
     glClear(GL_COLOR_BUFFER_BIT); // Clear the screen
-    
+
     // Static elements
     drawWalls();
     drawBricks();
@@ -462,7 +567,7 @@ void display() {
     if (gameOver) {
         printGameOverText(); // Keep printing the game over text
         printGameOverOptions();
-    } 
+    }
     else if (life_lost) {
         printPressKeyToContinue(); // Function to print press any key to continue
     }
@@ -480,63 +585,6 @@ void initOpenGL() {
     gluOrtho2D(0.0, WIDTH, HEIGHT, 0.0);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-}
-
-// Keyboard handling
-void keyboardHandler(unsigned char key, int x, int y) {
-    if (gameOver) {
-        if (key == 'r' || key == 'R') {
-            restartGame(); // Reset the game state
-        }
-        else if (key == 'q' || key == 'Q') {
-            std::cout << "Exiting game." << std::endl;
-            exit(0); // Exit the program
-        }
-        return; // Skip other inputs if the game is over
-    }
-    
-    if (is_paused) {
-        is_paused = false; // Unpause the game on any key press
-        life_lost = false; // Reset life lost flag
-    }
-
-    switch (key) {
-    case 'a':
-    case 'A':
-        paddle_x -= 10; // Move paddle left
-        if (paddle_x < 0) paddle_x = 0; // Keep paddle within the screen bounds
-        break;
-    case 'd':
-    case 'D':
-        paddle_x += 10; // Move paddle right
-        if (paddle_x > WIDTH - paddle_length) paddle_x = WIDTH - paddle_length;
-        break;
-    }
-    glutPostRedisplay(); // Request display update
-}
-
-void specialInput(int key, int x, int y) {
-    if (is_paused) {
-        is_paused = false; // Unpause the game on any key press
-        life_lost = false; // Reset life lost flag
-    }
-
-    switch (key) {
-    case GLUT_KEY_LEFT:
-        paddle_x -= 10;
-        if (paddle_x < 0) paddle_x = 0;
-        break;
-    case GLUT_KEY_RIGHT:
-        paddle_x += 10;
-        if (paddle_x > WIDTH - paddle_length) paddle_x = WIDTH - paddle_length;
-        break;
-    }
-    glutPostRedisplay();
-}
-
-void timer(int value) {
-    glutPostRedisplay();  // Trigger the display function
-    glutTimerFunc(16, timer, 0);  // Set up the next call to timer after approx. 16 ms (about 60 FPS)
 }
 
 
@@ -560,11 +608,13 @@ int main(int argc, char** argv) {
     // 3. Initialization
     initOpenGL();  // Initialize OpenGL settings
     initBricks();
-    
+
     glutDisplayFunc(display);
     glutReshapeFunc(reshape);
     glutKeyboardFunc(keyboardHandler);  // Register ASCII key handler
+    glutKeyboardUpFunc(keyboardUpHandler);
     glutSpecialFunc(specialInput);  // Register special key handler (arrow keys)
+    glutSpecialUpFunc(specialInputUp);
 
     glutTimerFunc(0, timer, 0);
 
