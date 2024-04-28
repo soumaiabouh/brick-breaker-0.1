@@ -37,7 +37,8 @@ std::vector<float> brick_y_positions;
 std::vector<bool> brick_active;
 
 // Paddle dimensions and position
-int paddle_length = 64;  // Total length of the paddle
+const int PADDLE_LENGTH = 64;
+int paddle_length = PADDLE_LENGTH;  // Total length of the paddle
 int paddle_x = (WIDTH - paddle_length) / 2;  // Starting x position
 int paddle_y = 650;  // Vertical position
 const int paddle_height = 20;  // Height of the paddle
@@ -73,19 +74,25 @@ bool rightArrowPressed = false;
 // Paddle speed
 const float speed = 250.0f;  // Adjust this speed based on testing
 
-// Global or static variables to track time
+// Global variables to track time
 float lastFrameTime = 0.0;
 float currentFrameTime = 0.0;
+
+// Global variables to track power-ups
+int lastPowerUpScore = 0;   // Score at last power-up activation
+bool powerUpActive = false; // Is a power-up currently active?
+int powerUpDuration = 0;    // Remaining duration of the power-up
+bool doublePaddleLength = false;
 
 // 0. Helper functions
 // Function to draw a wall given bottom-left and top-right coordinates
 void drawRectangle(float x1, float y1, float x2, float y2) {
-    glBegin(GL_QUADS); // Begin drawing a quad
+    glBegin(GL_QUADS);  // Begin drawing a quad
     glVertex2f(x1, y1); // Bottom left
     glVertex2f(x2, y1); // Bottom right
     glVertex2f(x2, y2); // Top right
     glVertex2f(x1, y2); // Top left
-    glEnd(); // End drawing the quad
+    glEnd();            // End drawing the quad
 }
 
 void decreaseLives() {
@@ -194,6 +201,17 @@ void printWinMessage() {
     renderBitmapString(textX, textY, GLUT_BITMAP_HELVETICA_18, winText);
 }
 
+void printPowerUpStatus() {
+    if (powerUpActive) {
+        std::string powerUpText = "Power-Up Active: " + std::to_string(powerUpDuration);
+        float textWidth = calculateStringWidth(GLUT_BITMAP_9_BY_15, powerUpText.c_str());
+        float textX = (WIDTH - textWidth) / 2;
+        float textY = HEIGHT - 15; // Display at the bottom of the screen
+        glColor3f(0.0f, 1.0f, 0.0f);
+        renderBitmapString(textX, textY, GLUT_BITMAP_9_BY_15, powerUpText.c_str());
+    }
+}
+
 // 2. STATIC ELEMENTS
 // 2.1 WALLS
 void drawWalls() {
@@ -251,22 +269,55 @@ bool allBricksDestroyed() {
 
 // 3. DYNAMIC ELEMENTS
 // 3.0 Restart
+void resetPowerUpVariables() {
+    powerUpActive = false;
+    powerUpDuration = 0;
+
+    // For the paddle power-up
+    doublePaddleLength = false;
+    paddle_length = PADDLE_LENGTH;
+}
+
 void restartGame() {
     gameOver = false; // Reset game over flag
     is_paused = false; // Ensure the game is not paused
     lives = 3; // Reset lives
     score = 0; // Reset score
+    
     // Reset ball and paddle positions
     ball_x = WIDTH / 2;
     ball_y = HEIGHT / 2;
     ball_dx = 0.0f;
     ball_dy = -fabs(ball_dy); // going upwards
+
+    // Reset paddle position
     paddle_x = (WIDTH - paddle_length) / 2;
+
+    // Reset bricks
     initBricks(); // Reinitialize the bricks
+
+    // Reset variables after power-up
+    lastPowerUpScore = 0;
+    resetPowerUpVariables();
 }
 
 // 3.1 Paddle
 void drawPaddle() {
+    // If power-up in effect, double the length
+    if (doublePaddleLength) {
+        paddle_length = PADDLE_LENGTH * 2;
+        middleWidth = 24;
+    }
+    else {
+        // Resetting
+        paddle_length = PADDLE_LENGTH;
+        middleWidth = 12;
+    }
+
+    // Updating the sections
+    leftWidth = (paddle_length - middleWidth) / 2;
+    rightWidth = leftWidth;
+
     // Draw left section
     glColor3fv(leftColor);
     drawRectangle(paddle_x, paddle_y, paddle_x + leftWidth, paddle_y + paddle_height);
@@ -309,6 +360,14 @@ void keyboardHandler(unsigned char key, int x, int y) {
     if (is_paused) {
         is_paused = false; // Unpause the game on any key press
         life_lost = false; // Reset life lost flag
+    }
+    if (key == '1' && score >= lastPowerUpScore + 50 && !powerUpActive) {
+        powerUpActive = true;
+        powerUpDuration = 500;  // Set for 500 iterations
+        lastPowerUpScore = score;  // Update the score at activation
+
+        doublePaddleLength = true;     // Set the flag
+        paddle_x -= (PADDLE_LENGTH/2); // Allows for gracefully expending 
     }
 
     switch (key) {
@@ -437,7 +496,7 @@ int checkBrickCollision(float& ball_x, float& ball_y, float& ball_dx, float& bal
                 int row = i / BRICK_COLS;
                 if (row < 2) score += 5;       // Top two rows
                 else if (row < 4) score += 3;  // Middle two rows
-                else score += 1;               // Bottom two rows
+                else score += 10;               // Bottom two rows
 
                 brick_active[i] = false;  // Remove the brick
 
@@ -519,6 +578,11 @@ int resetAfterBallLoss() {
         decreaseLives(); // Decrement the lives
         life_lost = true;
 
+        // Deactivate power-up
+        if (powerUpActive) {
+            resetPowerUpVariables();
+        }
+
         if (lives > 0) {
             // Reset the ball position
             ball_x = WIDTH / 2;
@@ -578,9 +642,19 @@ void display() {
     drawBall();
     updateBall();
 
+    if (powerUpActive) {
+        powerUpDuration--;
+        if (powerUpDuration <= 0 || life_lost) {
+            resetPowerUpVariables();
+            paddle_x += (PADDLE_LENGTH / 2);  // Even after getter smaller, the middle of the paddle stays at relatively the same position
+        }
+    }
+
     // Set the color for the text
     glColor3f(1.0f, 1.0f, 1.0f); // White 
     printText();
+    
+    printPowerUpStatus();
 
     // Check if the game is over and display the game over text
     if (gameOver) {
