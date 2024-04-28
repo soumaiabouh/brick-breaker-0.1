@@ -693,21 +693,9 @@ void updateLaser() {
     }
 }
 
+void updateGameLogic() {
 
-// GLUT display callback function
-void display() {
-    glClear(GL_COLOR_BUFFER_BIT); // Clear the screen
-
-    // Static elements
-    drawWalls();
-    drawBricks();
-
-    // Dynamic elements
-    drawPaddle();
-    drawBall();
     updateBall();
-
-    drawLaser();
     updateLaser();
 
     if (powerUpActive) {
@@ -720,6 +708,28 @@ void display() {
             paddle_x += (PADDLE_LENGTH / 2);  // Even after getter smaller, the middle of the paddle stays at relatively the same position
         }
     }
+
+    if (life_lost) {
+        printPressKeyToContinue(); // Function to print press any key to continue
+    }
+
+}
+
+// GLUT display callback function
+void display() {
+    glClear(GL_COLOR_BUFFER_BIT); // Clear the screen
+
+    updateGameLogic();
+
+    // Static elements
+    drawWalls();
+    drawBricks();
+
+    // Dynamic elements
+    drawPaddle();
+    drawBall();
+    drawLaser();
+
 
     // Set the color for the text
     glColor3f(1.0f, 1.0f, 1.0f); // White 
@@ -736,9 +746,6 @@ void display() {
             printGameOverText();
         }
         printGameOverOptions();
-    }
-    else if (life_lost) {
-        printPressKeyToContinue(); // Function to print press any key to continue
     }
 
     glutSwapBuffers(); // Swap the buffers to make it visible
