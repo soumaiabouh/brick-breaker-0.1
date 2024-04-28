@@ -82,7 +82,16 @@ float currentFrameTime = 0.0;
 int lastPowerUpScore = 0;   // Score at last power-up activation
 bool powerUpActive = false; // Is a power-up currently active?
 int powerUpDuration = 0;    // Remaining duration of the power-up
+
+// For the paddle power-up
 bool doublePaddleLength = false;
+
+// For the laser power-up
+bool laserActive = false;
+float laser_x = 0.0f;
+float laser_y = 0.0f;
+float laser_dx = 0.0f;
+float laser_dy = 1.0f;
 
 // 0. Helper functions
 // Function to draw a wall given bottom-left and top-right coordinates
@@ -269,13 +278,18 @@ bool allBricksDestroyed() {
 
 // 3. DYNAMIC ELEMENTS
 // 3.0 Restart
-void resetPowerUpVariables() {
+void resetPaddlePowerUpVariables() {
     powerUpActive = false;
     powerUpDuration = 0;
 
     // For the paddle power-up
     doublePaddleLength = false;
     paddle_length = PADDLE_LENGTH;
+}
+
+void resetLaserPowerUpVariables() {
+    powerUpActive = false;
+    laserActive = false;
 }
 
 void restartGame() {
@@ -298,7 +312,8 @@ void restartGame() {
 
     // Reset variables after power-up
     lastPowerUpScore = 0;
-    resetPowerUpVariables();
+    resetPaddlePowerUpVariables();
+    resetLaserPowerUpVariables();
 }
 
 // 3.1 Paddle
@@ -361,13 +376,28 @@ void keyboardHandler(unsigned char key, int x, int y) {
         is_paused = false; // Unpause the game on any key press
         life_lost = false; // Reset life lost flag
     }
-    if (key == '1' && score >= lastPowerUpScore + 50 && !powerUpActive) {
-        powerUpActive = true;
-        powerUpDuration = 500;  // Set for 500 iterations
-        lastPowerUpScore = score;  // Update the score at activation
 
-        doublePaddleLength = true;     // Set the flag
-        paddle_x -= (PADDLE_LENGTH/2); // Allows for gracefully expending 
+    switch (key) {
+    case '1':
+        if (score >= lastPowerUpScore + 50 && !powerUpActive) {
+            powerUpActive = true;
+            powerUpDuration = 500;  // Set for 500 iterations
+            lastPowerUpScore = score;  // Update the score at activation
+
+            doublePaddleLength = true;     // Set the flag
+            paddle_x -= (PADDLE_LENGTH / 2); // Allows for gracefully expending 
+        }
+        break;
+    
+    case '2':
+        if (score >= lastPowerUpScore + 50 && !laserActive) {
+            laserActive = true;
+            lastPowerUpScore = score;  // Update the score at activation
+            laser_x = paddle_x + paddle_length / 2; // Middle of the paddle
+            laser_y = paddle_y; // Starting at the paddle's vertical position
+        }
+        break;
+
     }
 
     switch (key) {
@@ -480,7 +510,7 @@ int checkPaddleCollision() {
     return 0;  // Ball is not above the paddle
 }
 
-int checkBrickCollision(float& ball_x, float& ball_y, float& ball_dx, float& ball_dy) {
+int checkBrickCollision(float& ball_x, float& ball_y, float& ball_dx, float& ball_dy, bool multipleChecks = true) {
     int collisionType = 0;
     for (size_t i = 0; i < brick_x_positions.size(); ++i) {
         if (brick_active[i]) {
@@ -514,7 +544,11 @@ int checkBrickCollision(float& ball_x, float& ball_y, float& ball_dx, float& bal
                     collisionType = std::max(collisionType, 3); // Corner
                 }
 
-                // Continue checking in case we hit multiple bricks
+                // If multiple checks is enabled, we continue checking in case we hit multiple bricks
+                if (!multipleChecks) {
+                    // Otherwise, we stop after hitting a single brick
+                    break;
+                }
             }
         }
     }
@@ -579,9 +613,9 @@ int resetAfterBallLoss() {
         life_lost = true;
 
         // Deactivate power-up
-        if (powerUpActive) {
-            resetPowerUpVariables();
-        }
+        resetPaddlePowerUpVariables();
+        resetLaserPowerUpVariables();
+        
 
         if (lives > 0) {
             // Reset the ball position
@@ -628,6 +662,37 @@ void updateBall() {
 
 }
 
+// 3.3 Laser
+void drawLaser() {
+    if (laserActive) {
+        glColor3f(1.0f, 0.0f, 0.0f); // Red color for the laser
+        glBegin(GL_QUADS);
+        glVertex2f(laser_x - 1, laser_y);
+        glVertex2f(laser_x + 1, laser_y);
+        glVertex2f(laser_x + 1, laser_y - 10);
+        glVertex2f(laser_x - 1, laser_y - 10);
+        glEnd();
+    }
+}
+
+void updateLaser() {
+    if (laserActive) {
+        laser_y -= 1; // Move the laser up
+        // Check collision with the top wall
+        if (laser_y <= TOP_WALL_BOUNDARY) {
+            resetLaserPowerUpVariables(); // Deactivate the laser if it hits the top wall
+        }
+
+        // Check for brick collisions
+        if (checkBrickCollision(laser_x, laser_y, laser_dx, laser_dy, false) > 0) {
+            // Hit a brick, but we don't need the collision type
+            // We stop the laser
+            resetLaserPowerUpVariables();
+        }
+
+    }
+}
+
 
 // GLUT display callback function
 void display() {
@@ -642,10 +707,16 @@ void display() {
     drawBall();
     updateBall();
 
+    drawLaser();
+    updateLaser();
+
     if (powerUpActive) {
         powerUpDuration--;
+        if (life_lost) { // Not sure if this is needed
+            resetLaserPowerUpVariables();
+        }
         if (powerUpDuration <= 0 || life_lost) {
-            resetPowerUpVariables();
+            resetPaddlePowerUpVariables();
             paddle_x += (PADDLE_LENGTH / 2);  // Even after getter smaller, the middle of the paddle stays at relatively the same position
         }
     }
