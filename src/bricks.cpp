@@ -168,6 +168,7 @@ void printText() {
     float studentIDX = 2 * thirdWidth + (thirdWidth - studentIDWidth) / 2.0f;
 
     // Calculate the position based on the width of the screen. Center them
+    glColor3f(1.0f, 1.0f, 1.0f);
     renderBitmapString(scoreX, 30.0f, GLUT_BITMAP_HELVETICA_18, score_to_print);
     renderBitmapString(livesX, 30.0f, GLUT_BITMAP_HELVETICA_18, lives_to_print);
     renderBitmapString(studentIDX, 30.0f, GLUT_BITMAP_HELVETICA_18, studentID);
@@ -279,18 +280,24 @@ bool allBricksDestroyed() {
 // 3. DYNAMIC ELEMENTS
 // 3.0 Restart
 void resetPaddlePowerUpVariables() {
-    powerUpActive = false;
     powerUpDuration = 0;
-
-    // For the paddle power-up
     doublePaddleLength = false;
     paddle_length = PADDLE_LENGTH;
 }
 
 void resetLaserPowerUpVariables() {
-    powerUpActive = false;
     laserActive = false;
 }
+
+void resetPowerUpVariables() {
+    powerUpActive = false;
+    resetPaddlePowerUpVariables();
+    resetLaserPowerUpVariables();
+    if (doublePaddleLength) {
+        paddle_x += (PADDLE_LENGTH / 2); // Adjust paddle position
+    }
+}
+
 
 void restartGame() {
     gameOver = false; // Reset game over flag
@@ -312,8 +319,7 @@ void restartGame() {
 
     // Reset variables after power-up
     lastPowerUpScore = 0;
-    resetPaddlePowerUpVariables();
-    resetLaserPowerUpVariables();
+    resetPowerUpVariables();
 }
 
 // 3.1 Paddle
@@ -612,11 +618,9 @@ int resetAfterBallLoss() {
         decreaseLives(); // Decrement the lives
         life_lost = true;
 
-        // Deactivate power-up
-        resetPaddlePowerUpVariables();
-        resetLaserPowerUpVariables();
+        // Deactivate power-ups
+        resetPowerUpVariables();
         
-
         if (lives > 0) {
             // Reset the ball position
             ball_x = WIDTH / 2;
@@ -680,6 +684,7 @@ void updateLaser() {
         laser_y -= 1; // Move the laser up
         // Check collision with the top wall
         if (laser_y <= TOP_WALL_BOUNDARY) {
+            powerUpActive = false;
             resetLaserPowerUpVariables(); // Deactivate the laser if it hits the top wall
         }
 
@@ -687,32 +692,40 @@ void updateLaser() {
         if (checkBrickCollision(laser_x, laser_y, laser_dx, laser_dy, false) > 0) {
             // Hit a brick, but we don't need the collision type
             // We stop the laser
+            powerUpActive = false;
             resetLaserPowerUpVariables();
         }
 
     }
 }
 
+// 4.0 Separation of concerns: putting together the functions that perform similar actions
 void updateGameLogic() {
-
     updateBall();
     updateLaser();
 
     if (powerUpActive) {
         powerUpDuration--;
-        if (life_lost) { // Not sure if this is needed
-            resetLaserPowerUpVariables();
-        }
         if (powerUpDuration <= 0 || life_lost) {
-            resetPaddlePowerUpVariables();
-            paddle_x += (PADDLE_LENGTH / 2);  // Even after getter smaller, the middle of the paddle stays at relatively the same position
+            resetPowerUpVariables();
         }
     }
 
-    if (life_lost) {
+}
+
+void checkGameOver() {
+    // Check if the game is over and display the game over text
+    if (gameOver) {
+        if (allBricksDestroyed()) {
+            printWinMessage();
+        }
+        else {
+            printGameOverText();
+        }
+        printGameOverOptions();
+    } else if (life_lost) {
         printPressKeyToContinue(); // Function to print press any key to continue
     }
-
 }
 
 // GLUT display callback function
@@ -730,23 +743,11 @@ void display() {
     drawBall();
     drawLaser();
 
-
-    // Set the color for the text
-    glColor3f(1.0f, 1.0f, 1.0f); // White 
+    // Text display
     printText();
-    
     printPowerUpStatus();
 
-    // Check if the game is over and display the game over text
-    if (gameOver) {
-        if (allBricksDestroyed()) {
-            printWinMessage();
-        }
-        else {
-            printGameOverText();
-        }
-        printGameOverOptions();
-    }
+    checkGameOver();
 
     glutSwapBuffers(); // Swap the buffers to make it visible
 }
