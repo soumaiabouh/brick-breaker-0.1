@@ -66,6 +66,7 @@ float ball_dy = DY;         // Initial vertical velocity
 bool life_lost = false;
 bool is_paused = false;
 bool gameOver = false;
+bool restartGame = false;
 // Paddle flags
 bool leftKeyPressed = false;      // tracks paddle movement to the left
 bool rightKeyPressed = false;     // tracks paddle movement to the right
@@ -299,29 +300,6 @@ void resetPowerUpVariables() {
 }
 
 
-void restartGame() {
-    gameOver = false; // Reset game over flag
-    is_paused = false; // Ensure the game is not paused
-    lives = 3; // Reset lives
-    score = 0; // Reset score
-    
-    // Reset ball and paddle positions
-    ball_x = WIDTH / 2;
-    ball_y = HEIGHT / 2;
-    ball_dx = 0.0f;
-    ball_dy = -fabs(ball_dy); // going upwards
-
-    // Reset paddle position
-    paddle_x = (WIDTH - paddle_length) / 2;
-
-    // Reset bricks
-    initBricks(); // Reinitialize the bricks
-
-    // Reset variables after power-up
-    lastPowerUpScore = 0;
-    resetPowerUpVariables();
-}
-
 // 3.1 Paddle
 void drawPaddle() {
     // If power-up in effect, double the length
@@ -369,7 +347,7 @@ void updatePaddle(float deltaTime) {
 void keyboardHandler(unsigned char key, int x, int y) {
     if (gameOver) {
         if (key == 'r' || key == 'R') {
-            restartGame(); // Reset the game state
+            restartGame = true; // Reset the game state flag
         }
         else if (key == 'q' || key == 'Q') {
             std::cout << "Exiting game." << std::endl;
@@ -710,10 +688,16 @@ void updateGameLogic() {
             resetPowerUpVariables();
         }
     }
-
 }
 
-void checkGameOver() {
+void handleLifeLost() {
+    if (life_lost && !gameOver && !restartGame) {
+        ball_dx = 0.0f;
+        printPressKeyToContinue(); // Function to print press any key to continue
+    }
+}
+
+void handleGameOver() {
     // Check if the game is over and display the game over text
     if (gameOver) {
         if (allBricksDestroyed()) {
@@ -723,8 +707,32 @@ void checkGameOver() {
             printGameOverText();
         }
         printGameOverOptions();
-    } else if (life_lost) {
-        printPressKeyToContinue(); // Function to print press any key to continue
+    } 
+}
+
+void handleGameRestart() {
+    if (restartGame) {
+        gameOver = false; // Reset game over flag
+        restartGame = false;
+        is_paused = false; // Ensure the game is not paused
+        lives = 3; // Reset lives
+        score = 0; // Reset score
+
+        // Reset ball and paddle positions
+        ball_x = WIDTH / 2;
+        ball_y = HEIGHT / 2;
+        ball_dx = 0.0f;
+        ball_dy = -fabs(ball_dy); // going upwards
+
+        // Reset paddle position
+        paddle_x = (WIDTH - paddle_length) / 2;
+
+        // Reset bricks
+        initBricks(); // Reinitialize the bricks
+
+        // Reset variables after power-up
+        lastPowerUpScore = 0;
+        resetPowerUpVariables();
     }
 }
 
@@ -747,7 +755,9 @@ void display() {
     printText();
     printPowerUpStatus();
 
-    checkGameOver();
+    handleLifeLost();
+    handleGameRestart();
+    handleGameOver();
 
     glutSwapBuffers(); // Swap the buffers to make it visible
 }
