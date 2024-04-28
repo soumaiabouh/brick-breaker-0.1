@@ -1,3 +1,4 @@
+
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
@@ -95,7 +96,7 @@ int main() {
     }
 
     // Vertex data for a cube
-    float vertices[] = {
+    float cubeVertices[] = {
         // Positions          // Normals           // Texture Coords
         -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,
          0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  0.0f,
@@ -140,34 +141,51 @@ int main() {
         -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f
     };
 
-    // Vertex Buffer Object
-    unsigned int VBO;
-    // Vertex Array Object
-    unsigned int VAO;
+    // Vertex data for a plane
+    float planeVertices[] = {
+        // Positions          // Normals           // Texture Coords
+        -10.0f, 0.0f, -10.0f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f,
+         10.0f, 0.0f, -10.0f,  0.0f,  1.0f,  0.0f,  10.0f,  0.0f,
+         10.0f, 0.0f,  10.0f,  0.0f,  1.0f,  0.0f,  10.0f,  10.0f,
+         10.0f, 0.0f,  10.0f,  0.0f,  1.0f,  0.0f,  10.0f,  10.0f,
+        -10.0f, 0.0f,  10.0f,  0.0f,  1.0f,  0.0f,  0.0f,  10.0f,
+        -10.0f, 0.0f, -10.0f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f
+    };
 
-    // Generate and bind the VAO and VBO
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
+    // Vertex Buffer Object and Vertex Array Object for the cube
+    unsigned int cubeVAO, cubeVBO;
+    // Vertex Buffer Object and Vertex Array Object for the plane
+    unsigned int planeVAO, planeVBO;
 
-    // Bind the Vertex Array Object first, then bind and set vertex buffer(s) and attribute pointer(s).
-    glBindVertexArray(VAO);
-
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    // Position attribute
+    // Generate and bind the VAO and VBO for the cube
+    glGenVertexArrays(1, &cubeVAO);
+    glGenBuffers(1, &cubeVBO);
+    glBindVertexArray(cubeVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), cubeVertices, GL_STATIC_DRAW);
+    // Set vertex attribute pointers for the cube
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
-
-    // Normal attribute
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
-
-    // Texture coord attribute
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
     glEnableVertexAttribArray(2);
 
-    // Unbind the VAO
+    // Generate and bind the VAO and VBO for the plane
+    glGenVertexArrays(1, &planeVAO);
+    glGenBuffers(1, &planeVBO);
+    glBindVertexArray(planeVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, planeVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(planeVertices), planeVertices, GL_STATIC_DRAW);
+    // Set vertex attribute pointers for the plane
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+    glEnableVertexAttribArray(2);
+
+    // Unbind the VAOs
     glBindVertexArray(0);
 
     // Shader compilation
@@ -219,8 +237,23 @@ int main() {
         glm::mat4 view = glm::mat4(1.0f);
         glm::mat4 projection = glm::mat4(1.0f);
 
+        // Set up the transformation matrices for the plane
+        glm::mat4 planeModel = glm::mat4(1.0f);
+        planeModel = glm::translate(planeModel, glm::vec3(0.0f, -0.5f, 0.0f)); // Slightly below the origin
+
+
         model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(0.5f, 1.0f, 0.0f));
-        view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+
+        //view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+
+        // Define camera position and orientation
+        glm::vec3 cameraPos = glm::vec3(0.0f, 5.0f, 10.0f); // 5 units above the origin on the y-axis
+        glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f); // Looking at the origin
+        glm::vec3 cameraUp = glm::vec3(0.0f, 0.0f, -1.0f); // Up vector is opposite to the direction we're looking
+
+        // Create the view matrix using glm::lookAt
+        view = glm::lookAt(cameraPos, cameraTarget, cameraUp);
+
         projection = glm::perspective(glm::radians(45.0f), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 100.0f);
 
         // Set the uniform variables in the shader
@@ -236,10 +269,27 @@ int main() {
         glUniform3f(glGetUniformLocation(shaderProgram, "lightPos"), 1.2f, 1.0f, 2.0f);
         glUniform3f(glGetUniformLocation(shaderProgram, "objectColor"), 1.0f, 0.5f, 0.31f);
 
-        // Render the cube
-        glBindVertexArray(VAO);
+        // Render the plane with a specific color
+        glUniform3f(glGetUniformLocation(shaderProgram, "objectColor"), 0.5f, 0.8f, 0.7f); // Set the plane color to a light blue-green
+        glBindVertexArray(planeVAO);
+        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(planeModel));
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+
+        // Render the first cube with a specific color
+        glUniform3f(glGetUniformLocation(shaderProgram, "objectColor"), 1.0f, 0.0f, 0.0f); // Set the cube color to red
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(-1.0f, 0.0f, 0.0f)); // Move to the left
+        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+        glBindVertexArray(cubeVAO);
         glDrawArrays(GL_TRIANGLES, 0, 36);
-        glBindVertexArray(0);
+
+        // Render the second cube with a specific color
+        glUniform3f(glGetUniformLocation(shaderProgram, "objectColor"), 0.0f, 0.0f, 1.0f); // Set the cube color to blue
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(1.0f, 0.0f, 0.0f)); // Move to the right
+        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+        glBindVertexArray(cubeVAO);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
 
         // Swap buffers and poll IO events
         glfwSwapBuffers(window);
@@ -247,8 +297,10 @@ int main() {
     }
 
     // Clean up
-    glDeleteVertexArrays(1, &VAO);
-    glDeleteBuffers(1, &VBO);
+    glDeleteVertexArrays(1, &cubeVAO);
+    glDeleteBuffers(1, &cubeVBO);
+    glDeleteVertexArrays(1, &planeVAO);
+    glDeleteBuffers(1, &planeVBO);
     glDeleteProgram(shaderProgram);
 
     // Terminate GLFW
@@ -257,7 +309,7 @@ int main() {
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
-    // make sure the viewport matches the new window dimensions; note that width and
+    // Make sure the viewport matches the new window dimensions; note that width and
     // height will be significantly larger than specified on retina displays.
     glViewport(0, 0, width, height);
 }

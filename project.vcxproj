@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClCompile Include="Dependencies\STB_IMAGE\include\additional.cpp" />
     <ClCompile Include="src\design.cpp" />
+    <ClCompile Include="src\design_V2.cpp" />
     <ClCompile Include="src\glad.c" />
   </ItemGroup>
   <ItemGroup>
