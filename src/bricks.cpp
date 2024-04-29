@@ -179,49 +179,49 @@ void printText() {
 
 void printGameOverText() {
     gameOver = true; // Set game over flag
-    const char* gameOverText = "Game Over!";
-    float textWidth = calculateStringWidth(GLUT_BITMAP_HELVETICA_18, gameOverText);
-    float textX = (WINDOW_WIDTH - textWidth) / 2; // Center the text horizontally
-    float textY = WINDOW_HEIGHT / 2; // Position the text vertically in the middle
+    const char* game_over_text = "Game Over!";
+    float text_width = calculateStringWidth(GLUT_BITMAP_HELVETICA_18, game_over_text);
+    float text_x = (WINDOW_WIDTH - text_width) / 2; // Center the text horizontally
+    float text_y = WINDOW_HEIGHT / 2; // Position the text vertically in the middle
     glColor3f(1.0f, 0.0f, 0.0f); // Red color for the game over text
-    renderBitmapString(textX, textY, GLUT_BITMAP_HELVETICA_18, gameOverText);
+    renderBitmapString(text_x, text_y, GLUT_BITMAP_HELVETICA_18, game_over_text);
 }
 
 void printGameOverOptions() {
-    const char* gameOverOptions = "Press [r] to restart or [q] to quit";
-    float optionsWidth = calculateStringWidth(GLUT_BITMAP_9_BY_15, gameOverOptions);
-    float optionsX = (WINDOW_WIDTH - optionsWidth) / 2;
-    float optionsY = WINDOW_HEIGHT / 2 + 50; // Below the game over text
+    const char* game_over_options = "Press [r] to restart or [q] to quit";
+    float options_width = calculateStringWidth(GLUT_BITMAP_9_BY_15, game_over_options);
+    float options_x = (WINDOW_WIDTH - options_width) / 2;
+    float options_y = WINDOW_HEIGHT / 2 + 50; // Below the game over text
     glColor3f(1.0f, 1.0f, 1.0f); // White color for the text
-    renderBitmapString(optionsX, optionsY, GLUT_BITMAP_9_BY_15, gameOverOptions);
+    renderBitmapString(options_x, options_y, GLUT_BITMAP_9_BY_15, game_over_options);
 }
 
 void printPressKeyToContinue() {
-    const char* continueMessage = "Press any key to continue";
-    float messageWidth = calculateStringWidth(GLUT_BITMAP_9_BY_15, continueMessage);
-    float messageX = (WINDOW_WIDTH - messageWidth) / 2;
-    float messageY = WINDOW_HEIGHT / 2 + 50; // Below the score or any other central message
+    const char* continue_message = "Press any key to continue";
+    float message_width = calculateStringWidth(GLUT_BITMAP_9_BY_15, continue_message);
+    float message_x = (WINDOW_WIDTH - message_width) / 2;
+    float message_y = WINDOW_HEIGHT / 2 + 50; // Below the score or any other central message
     glColor3f(1.0f, 1.0f, 1.0f); // White color for the text
-    renderBitmapString(messageX, messageY, GLUT_BITMAP_9_BY_15, continueMessage);
+    renderBitmapString(message_x, message_y, GLUT_BITMAP_9_BY_15, continue_message);
 }
 
 void printWinMessage() {
-    const char* winText = "You Won!";
-    float textWidth = calculateStringWidth(GLUT_BITMAP_HELVETICA_18, winText);
-    float textX = (WINDOW_WIDTH - textWidth) / 2;
-    float textY = WINDOW_HEIGHT / 2 - 50; // Position it above the game over options
+    const char* win_text = "You Won!";
+    float text_width = calculateStringWidth(GLUT_BITMAP_HELVETICA_18, win_text);
+    float text_x = (WINDOW_WIDTH - text_width) / 2;
+    float text_y = WINDOW_HEIGHT / 2 - 50; // Position it above the game over options
     glColor3f(0.0f, 1.0f, 0.0f);  // Green color for the win text
-    renderBitmapString(textX, textY, GLUT_BITMAP_HELVETICA_18, winText);
+    renderBitmapString(text_x, text_y, GLUT_BITMAP_HELVETICA_18, win_text);
 }
 
 void printPowerUpStatus() {
     if (powerUpActive) {
-        std::string powerUpText = "Power-Up Active: " + std::to_string(powerUpDuration);
-        float textWidth = calculateStringWidth(GLUT_BITMAP_9_BY_15, powerUpText.c_str());
-        float textX = (WINDOW_WIDTH - textWidth) / 2;
-        float textY = WINDOW_HEIGHT - 15; // Display at the bottom of the screen
+        std::string power_up_text = "Power-Up Active: " + std::to_string(powerUpDuration);
+        float text_width = calculateStringWidth(GLUT_BITMAP_9_BY_15, power_up_text.c_str());
+        float text_x = (WINDOW_WIDTH - text_width) / 2;
+        float text_y = WINDOW_HEIGHT - 15; // Display at the bottom of the screen
         glColor3f(0.0f, 1.0f, 0.0f);
-        renderBitmapString(textX, textY, GLUT_BITMAP_9_BY_15, powerUpText.c_str());
+        renderBitmapString(text_x, text_y, GLUT_BITMAP_9_BY_15, power_up_text.c_str());
     }
 }
 
@@ -239,21 +239,21 @@ void initBricks() {
     int horizontal_margin = 20;
     int vertical_margin = 20;
 
-    float wallTop = 40.0f + TOP_WALL_HEIGHT; // lower part of the top wall (y2)
-    float wallLeft = WALL_THICKNESS;
-    float wallRight = WINDOW_WIDTH - WALL_THICKNESS;
+    float wall_top = 40.0f + TOP_WALL_HEIGHT; // lower part of the top wall (y2)
+    float wall_left = WALL_THICKNESS;
+    float wall_right = WINDOW_WIDTH - WALL_THICKNESS;
 
-    float availableWidth = wallRight - wallLeft - ((BRICK_COLS - 1) * BRICK_SPACING) - (2 * horizontal_margin); // leaving some space between the bricks and both walls
+    float available_width = wall_right - wall_left - ((BRICK_COLS - 1) * BRICK_SPACING) - (2 * horizontal_margin); // leaving some space between the bricks and both walls
 
-    brickWidth = availableWidth / BRICK_COLS;
+    brickWidth = available_width / BRICK_COLS;
 
-    float startX = wallLeft + horizontal_margin;
-    float startY = wallTop + vertical_margin; // Starting Y position for the bricks + added margin
+    float start_x = wall_left + horizontal_margin;
+    float start_y = wall_top + vertical_margin; // Starting Y position for the bricks + added margin
 
     for (int row = 0; row < BRICK_ROWS; row++) {
         for (int col = 0; col < BRICK_COLS; col++) {
-            float x = startX + col * (brickWidth + BRICK_SPACING);
-            float y = startY + row * (BRICK_HEIGHT + BRICK_SPACING);
+            float x = start_x + col * (brickWidth + BRICK_SPACING);
+            float y = start_y + row * (BRICK_HEIGHT + BRICK_SPACING);
             brickPositionsX.push_back(x);
             brickPositionsY.push_back(y);
             brickActive.push_back(true);
@@ -333,14 +333,14 @@ void drawPaddle() {
 }
 
 void updatePaddle(float deltaTime) {
-    float moveAmount = PADDLE_SPEED * deltaTime;
+    float move_amount = PADDLE_SPEED * deltaTime;
 
     if (leftKeyPressed || leftArrowPressed) {
-        paddleX -= moveAmount;
+        paddleX -= move_amount;
         if (paddleX < 0) paddleX = 0;
     }
     if (rightKeyPressed || rightArrowPressed) {
-        paddleX += moveAmount;
+        paddleX += move_amount;
         if (paddleX > WINDOW_WIDTH - paddleLength) paddleX = WINDOW_WIDTH - paddleLength;
     }
 }
@@ -440,10 +440,10 @@ void specialInputUp(int key, int x, int y) {
 
 void timer(int value) {
     currentFrameTime = glutGet(GLUT_ELAPSED_TIME) / 1000.0f;
-    float deltaTime = currentFrameTime - lastFrameTime;
+    float delta_time = currentFrameTime - lastFrameTime;
     lastFrameTime = currentFrameTime;
 
-    updatePaddle(deltaTime);
+    updatePaddle(delta_time);
     glutPostRedisplay();
     glutTimerFunc(16, timer, 0);  // Set up the next call to timer after approx. 16 ms
 }
@@ -480,34 +480,34 @@ int checkWallCollision(int x, int y) {
 int checkPaddleCollision() {
 
     if (ballY + ballRadius >= paddleY && ballY + ballRadius <= paddleY + PADDLE_HEIGHT) {
-        int leftSectionEnd = paddleX + paddleLeftWidth;
-        int middleSectionEnd = leftSectionEnd + paddleMiddleWidth;
+        int left_section_end = paddleX + paddleLeftWidth;
+        int middle_section_end = left_section_end + paddleMiddleWidth;
 
-        if (ballX + ballRadius >= paddleX && ballX < leftSectionEnd) {
+        if (ballX + ballRadius >= paddleX && ballX < left_section_end) {
             return 1;  // Ball is above the left section
         }
-        else if (ballX >= leftSectionEnd && ballX < middleSectionEnd) {
+        else if (ballX >= left_section_end && ballX < middle_section_end) {
             return 2;  // Ball is above the middle section
         }
-        else if (ballX >= middleSectionEnd && ballX - ballRadius < paddleX + paddleLength) {
+        else if (ballX >= middle_section_end && ballX - ballRadius < paddleX + paddleLength) {
             return 3;  // Ball is above the right section
         }
     }
     return 0;  // Ball is not above the paddle
 }
 
-int checkBrickCollision(float& ball_x, float& ball_y, float& ball_dx, float& ball_dy, bool multipleChecks = true) {
-    int collisionType = 0;
+int checkBrickCollision(float& ball_x, float& ball_y, float& ball_dx, float& ball_dy, bool multiple_checks = true) {
+    int collision_type = 0;
     for (size_t i = 0; i < brickPositionsX.size(); ++i) {
         if (brickActive[i]) {
-            float brickLeft = brickPositionsX[i];
-            float brickRight = brickLeft + brickWidth;
-            float brickTop = brickPositionsY[i];
-            float brickBottom = brickTop + BRICK_HEIGHT;
+            float brick_left = brickPositionsX[i];
+            float brick_right = brick_left + brickWidth;
+            float brick_top = brickPositionsY[i];
+            float brick_bottom = brick_top + BRICK_HEIGHT;
 
             // Check collision with the ball
-            if (ball_x + ballRadius > brickLeft && ball_x - ballRadius < brickRight &&
-                ball_y + ballRadius > brickTop && ball_y - ballRadius < brickBottom) {
+            if (ball_x + ballRadius > brick_left && ball_x - ballRadius < brick_right &&
+                ball_y + ballRadius > brick_top && ball_y - ballRadius < brick_bottom) {
                 // Determine points by row
                 int row = i / BRICK_COLS;
                 if (row < 2) gameScore += 5;       // Top two rows
@@ -517,33 +517,33 @@ int checkBrickCollision(float& ball_x, float& ball_y, float& ball_dx, float& bal
                 brickActive[i] = false;  // Remove the brick
 
                 // Determine side of collision
-                bool hitVertical = ((ball_x + ballRadius) > brickLeft && (ball_x - ballRadius) < brickRight);
-                bool hitHorizontal = ((ball_y + ballRadius) > brickTop && (ball_y - ballRadius) < brickBottom);
+                bool hit_vertical = ((ball_x + ballRadius) > brick_left && (ball_x - ballRadius) < brick_right);
+                bool hit_horizontal = ((ball_y + ballRadius) > brick_top && (ball_y - ballRadius) < brick_bottom);
 
-                if (hitVertical && !hitHorizontal) {
-                    collisionType = std::max(collisionType, 1); // Side
+                if (hit_vertical && !hit_horizontal) {
+                    collision_type = std::max(collision_type, 1); // Side
                 }
-                else if (!hitVertical && hitHorizontal) {
-                    collisionType = std::max(collisionType, 2); // Top/Bottom
+                else if (!hit_vertical && hit_horizontal) {
+                    collision_type = std::max(collision_type, 2); // Top/Bottom
                 }
-                else if (hitVertical && hitHorizontal) {
-                    collisionType = std::max(collisionType, 3); // Corner
+                else if (hit_vertical && hit_horizontal) {
+                    collision_type = std::max(collision_type, 3); // Corner
                 }
 
                 // If multiple checks is enabled, we continue checking in case we hit multiple bricks
-                if (!multipleChecks) {
+                if (!multiple_checks) {
                     // Otherwise, we stop after hitting a single brick
                     break;
                 }
             }
         }
     }
-    return collisionType;
+    return collision_type;
 }
 
 void handleCollisions() {
-    int collisionType = checkWallCollision(ballX, ballY);
-    switch (collisionType) {
+    int collision_type = checkWallCollision(ballX, ballY);
+    switch (collision_type) {
     case 1:
         ballDX = -ballDX; // Invert horizontal velocity
         break;
@@ -556,8 +556,8 @@ void handleCollisions() {
         break;
     }
 
-    int brickCollision = checkBrickCollision(ballX, ballY, ballDX, ballDY);
-    switch (brickCollision) {
+    int brick_collision = checkBrickCollision(ballX, ballY, ballDX, ballDY);
+    switch (brick_collision) {
     case 1:
         ballDX = -ballDX; // Invert horizontal velocity
         break;
@@ -571,8 +571,8 @@ void handleCollisions() {
     }
 
     // Check for collision with the paddle
-    int paddleCollision = checkPaddleCollision();
-    switch (paddleCollision) {
+    int paddle_collision = checkPaddleCollision();
+    switch (paddle_collision) {
     case 1:  // Collision with left section
         ballDY = -fabs(DY);
         ballDX = -fabs(DX);
@@ -785,13 +785,13 @@ int main(int argc, char** argv) {
 
     // 1. Setting the initial window position
     // Get the screen size
-    int screenWidth = glutGet(GLUT_SCREEN_WIDTH);
-    int screenHeight = glutGet(GLUT_SCREEN_HEIGHT);
+    int screen_width = glutGet(GLUT_SCREEN_WIDTH);
+    int screen_height = glutGet(GLUT_SCREEN_HEIGHT);
 
     // Calculate the window's initial position to center it
-    int posX = (screenWidth - WINDOW_WIDTH) / 2;
-    int posY = (screenHeight - WINDOW_HEIGHT) / 2;
-    glutInitWindowPosition(posX, posY);
+    int window_pos_x = (screen_width - WINDOW_WIDTH) / 2;
+    int window_pos_y = (screen_height - WINDOW_HEIGHT) / 2;
+    glutInitWindowPosition(window_pos_x, window_pos_y);
 
     // 2. Setting the size
     glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
