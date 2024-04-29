@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include <string>
+#include <vector>
 
 const unsigned int SCREEN_WIDTH = 800;
 const unsigned int SCREEN_HEIGHT = 600;
@@ -62,6 +63,93 @@ void main() {
 }
 )glsl";
 
+// Helper function to add vertex data to the vertices array
+void addVertexData(float* vertices, int& index, float x, float y, float z, float nx, float ny, float nz, float tx, float ty) {
+    vertices[index++] = x;
+    vertices[index++] = y;
+    vertices[index++] = z;
+    vertices[index++] = nx;
+    vertices[index++] = ny;
+    vertices[index++] = nz;
+    vertices[index++] = tx;
+    vertices[index++] = ty;
+}
+
+void generateRectangle(float h, float l, float w, float x, float y, float z, float* vertices, int& vertexIndex) {
+    // Front face
+    addVertexData(vertices, vertexIndex, x - l / 2.0f, y - h / 2.0f, z + w / 2.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f); // Bottom left
+    addVertexData(vertices, vertexIndex, x - l / 2.0f, y + h / 2.0f, z + w / 2.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f); // Top left
+    addVertexData(vertices, vertexIndex, x + l / 2.0f, y - h / 2.0f, z + w / 2.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f); // Bottom right
+    addVertexData(vertices, vertexIndex, x + l / 2.0f, y + h / 2.0f, z + w / 2.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f); // Top right
+
+    // Back face
+    addVertexData(vertices, vertexIndex, x + l / 2.0f, y - h / 2.0f, z - w / 2.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f); // Bottom right
+    addVertexData(vertices, vertexIndex, x + l / 2.0f, y + h / 2.0f, z - w / 2.0f, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f); // Top right
+    addVertexData(vertices, vertexIndex, x - l / 2.0f, y - h / 2.0f, z - w / 2.0f, 0.0f, 0.0f, -1.0f, 0.0f, 1.0f); // Bottom left
+    addVertexData(vertices, vertexIndex, x - l / 2.0f, y + h / 2.0f, z - w / 2.0f, 0.0f, 0.0f, -1.0f, 1.0f, 1.0f); // Top left
+
+    // Left face
+    addVertexData(vertices, vertexIndex, x - l / 2.0f, y - h / 2.0f, z - w / 2.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f); // Bottom left
+    addVertexData(vertices, vertexIndex, x - l / 2.0f, y + h / 2.0f, z - w / 2.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f); // Top left
+    addVertexData(vertices, vertexIndex, x - l / 2.0f, y - h / 2.0f, z + w / 2.0f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f); // Bottom right
+    addVertexData(vertices, vertexIndex, x - l / 2.0f, y + h / 2.0f, z + w / 2.0f, -1.0f, 0.0f, 0.0f, 1.0f, 1.0f); // Top right
+
+    // Right face
+    addVertexData(vertices, vertexIndex, x + l / 2.0f, y - h / 2.0f, z + w / 2.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f); // Bottom left
+    addVertexData(vertices, vertexIndex, x + l / 2.0f, y + h / 2.0f, z + w / 2.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f); // Top left
+    addVertexData(vertices, vertexIndex, x + l / 2.0f, y - h / 2.0f, z - w / 2.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f); // Bottom right
+    addVertexData(vertices, vertexIndex, x + l / 2.0f, y + h / 2.0f, z - w / 2.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f); // Top right
+
+    // Top face
+    addVertexData(vertices, vertexIndex, x - l / 2.0f, y + h / 2.0f, z - w / 2.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f); // Bottom left
+    addVertexData(vertices, vertexIndex, x - l / 2.0f, y + h / 2.0f, z + w / 2.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f); // Top left
+    addVertexData(vertices, vertexIndex, x + l / 2.0f, y + h / 2.0f, z - w / 2.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f); // Bottom right
+    addVertexData(vertices, vertexIndex, x + l / 2.0f, y + h / 2.0f, z + w / 2.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f); // Top right
+
+    // Bottom face
+    addVertexData(vertices, vertexIndex, x - l / 2.0f, y - h / 2.0f, z + w / 2.0f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f); // Bottom left
+    addVertexData(vertices, vertexIndex, x + l / 2.0f, y - h / 2.0f, z + w / 2.0f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f); // Bottom right
+    addVertexData(vertices, vertexIndex, x - l / 2.0f, y - h / 2.0f, z - w / 2.0f, 0.0f, -1.0f, 0.0f, 0.0f, 1.0f); // Top left
+    addVertexData(vertices, vertexIndex, x + l / 2.0f, y - h / 2.0f, z - w / 2.0f, 0.0f, -1.0f, 0.0f, 1.0f, 1.0f); // Top right
+}
+
+
+void generateSphere(float radius, int segments, int rings, std::vector<float>& vertices) {
+    for (int i = 0; i <= rings; ++i) {
+        float v = static_cast<float>(i) / static_cast<float>(rings);
+        float phi = v * glm::pi<float>();
+
+        for (int j = 0; j <= segments; ++j) {
+            float u = static_cast<float>(j) / static_cast<float>(segments);
+            float theta = u * 2.0f * glm::pi<float>();
+
+            float x = radius * sin(phi) * cos(theta);
+            float y = radius * cos(phi);
+            float z = radius * sin(phi) * sin(theta);
+
+            vertices.push_back(x);
+            vertices.push_back(y);
+            vertices.push_back(z);
+
+            float nx = x / radius;
+            float ny = y / radius;
+            float nz = z / radius;
+
+            vertices.push_back(nx);
+            vertices.push_back(ny);
+            vertices.push_back(nz);
+
+            vertices.push_back(u);
+            vertices.push_back(v);
+        }
+    }
+}
+
+// Ball variables 
+glm::vec3 ballPos = glm::vec3(0.0f, 0.5f, 0.0f); // Initial position just above the plane
+glm::vec3 ballVel = glm::vec3(0.3f, 0.0f, 0.3f); // Initial velocity
+float ballRadius = 0.5f;
+
 int main() {
     // Initialize GLFW
     if (!glfwInit()) {
@@ -95,52 +183,6 @@ int main() {
         return -1;
     }
 
-    // Vertex data for a cube
-    float cubeVertices[] = {
-        // Positions          // Normals           // Texture Coords
-        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,
-         0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  0.0f,
-         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f,
-         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,
-
-        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,
-         0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  0.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  1.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  1.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  1.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,
-
-        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
-        -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  1.0f,
-        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
-        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
-        -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  0.0f,
-        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
-
-         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
-         0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  1.0f,
-         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
-         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
-         0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
-
-        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,
-         0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  1.0f,
-         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  0.0f,
-         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  0.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  0.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,
-
-        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f,
-         0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  1.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f
-    };
-
     // Vertex data for a plane
     float planeVertices[] = {
         // Positions          // Normals           // Texture Coords
@@ -152,24 +194,8 @@ int main() {
         -10.0f, 0.0f, -10.0f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f
     };
 
-    // Vertex Buffer Object and Vertex Array Object for the cube
-    unsigned int cubeVAO, cubeVBO;
     // Vertex Buffer Object and Vertex Array Object for the plane
     unsigned int planeVAO, planeVBO;
-
-    // Generate and bind the VAO and VBO for the cube
-    glGenVertexArrays(1, &cubeVAO);
-    glGenBuffers(1, &cubeVBO);
-    glBindVertexArray(cubeVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), cubeVertices, GL_STATIC_DRAW);
-    // Set vertex attribute pointers for the cube
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-    glEnableVertexAttribArray(2);
 
     // Generate and bind the VAO and VBO for the plane
     glGenVertexArrays(1, &planeVAO);
@@ -185,8 +211,125 @@ int main() {
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
     glEnableVertexAttribArray(2);
 
-    // Unbind the VAOs
+    // Brick configuration
+    const int numBrickRows = 4;
+    const int numBrickCols = 8;
+    const float brickWidth =0.5f;
+    const float brickHeight = 1.5f;
+    const float brickDepth = 1.0f;
+    const float brickSpacing = 0.05f;
+
+    // Calculate the total number of cuboids (including bricks)
+    const int numCuboids = 3 + numBrickRows * numBrickCols;
+
+    float positions[numCuboids][3] = {
+        {0.0f, 0.5f, -4.0f},
+        {-4.0f, 0.5f, 0.0f},
+        {4.0f, 0.5f,  0.0f},
+        { 1.0f, 0.0f,  1.0f},
+        { 2.0f, 0.0f,  2.0f}
+        // The remaining positions will be filled with brick positions
+    };
+
+    float colors[numCuboids][3] = {
+        {1.0f, 1.0f, 0.0f}, // Yellow
+        {1.0f, 1.0f, 0.0f}, // Yellow
+        {1.0f, 1.0f, 0.0f}, // Yellow
+     
+        // The remaining colors will be filled with brick colors
+    };
+
+    float dimensions[numCuboids][3] = {
+        {1.0f, 20.0f, 1.0f}, // Dimensions for cuboid 0 (length, height, width)
+        {1.0f, 1.0f, 20.0f}, // Dimensions for cuboid 1 (length, height, width)
+        {1.0f, 1.0f, 20.0f}, // Dimensions for cuboid 2 (length, height, width)
+  
+        // The remaining dimensions will be filled with brick dimensions
+    };
+
+   
+
+    // Calculate the starting position of the brick wall
+    const float brickStartX = -3.3f;
+    const float brickEndX = 3.3f;
+
+    const float brickStartY = 0.0f; // Adjust the y-coordinate to match the plane level
+    const float brickStartZ = -3.5f;
+    const float totalBrickWidth = brickEndX - brickStartX;
+    // Generate brick positions, colors, and dimensions
+    int brickIndex = 3; // Start index for bricks in the arrays
+    for (int row = 0; row < numBrickRows; ++row) {
+        for (int col = 0; col < numBrickCols; ++col) {
+            float brickX = brickStartX + (col * totalBrickWidth) / (numBrickCols - 1);
+            float brickY = brickStartY + 0.5;
+            float brickZ = brickStartZ + row * (brickDepth + brickSpacing);
+
+            positions[brickIndex][0] = brickX;
+            positions[brickIndex][1] = brickY;
+            positions[brickIndex][2] = brickZ;
+
+            colors[brickIndex][0] = 1.0f;
+            colors[brickIndex][1] = 0.0f;
+            colors[brickIndex][2] = 0.0f;
+
+            dimensions[brickIndex][0] = brickWidth;
+            dimensions[brickIndex][1] = brickHeight;
+            dimensions[brickIndex][2] = brickDepth;
+
+            ++brickIndex;
+        }
+    }
+
+    // Vertex Buffer Object and Vertex Array Object for the cuboids
+    unsigned int cuboidVAO, cuboidVBO;
+    glGenVertexArrays(1, &cuboidVAO);
+    glGenBuffers(1, &cuboidVBO);
+    glBindVertexArray(cuboidVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, cuboidVBO);
+
+    // Generate cuboid vertex data and buffer it
+    int totalVertices = 0;
+    for (int i = 0; i < numCuboids; ++i) {
+        totalVertices += 24; // Each cuboid has 24 vertices
+    }
+    float* cuboidVertices = new float[totalVertices * 8]; // Each vertex has 8 floats (3 position, 3 normal, 2 texture coordinates)
+    int vertexIndex = 0;
+
+    for (int i = 0; i < numCuboids; ++i) {
+        generateRectangle(dimensions[i][0], dimensions[i][1], dimensions[i][2], positions[i][0], positions[i][1], positions[i][2], cuboidVertices, vertexIndex);
+    }
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * totalVertices * 8, cuboidVertices, GL_STATIC_DRAW);
+    // Set vertex attribute pointers for the rectangles
+    // Position attribute
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    // Normal attribute
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+    // Texture coordinate attribute
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+    glEnableVertexAttribArray(2);
+
+    unsigned int ballVAO, ballVBO;
+    glGenVertexArrays(1, &ballVAO);
+    glGenBuffers(1, &ballVBO);
+    glBindVertexArray(ballVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, ballVBO);
+
+    std::vector<float> ballVertices;
+    generateSphere(ballRadius, 20, 20, ballVertices);
+    glBufferData(GL_ARRAY_BUFFER, ballVertices.size() * sizeof(float), &ballVertices[0], GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+    glEnableVertexAttribArray(2);
+    // Unbind the VAO
     glBindVertexArray(0);
+    delete[] cuboidVertices; // Free the dynamically allocated memory
+
 
     // Shader compilation
     unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
@@ -219,7 +362,8 @@ int main() {
 
     // Enable depth testing
     glEnable(GL_DEPTH_TEST);
-
+    
+    
     // Main loop
     while (!glfwWindowShouldClose(window)) {
         // Input
@@ -239,7 +383,7 @@ int main() {
 
         // Set up the transformation matrices for the plane
         glm::mat4 planeModel = glm::mat4(1.0f);
-        planeModel = glm::translate(planeModel, glm::vec3(0.0f, -0.5f, 0.0f)); // Slightly below the origin
+        planeModel = glm::translate(planeModel, glm::vec3(0.0f, 0.0f, 0.0f)); // Slightly below the origin
 
 
         model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(0.5f, 1.0f, 0.0f));
@@ -247,7 +391,7 @@ int main() {
         //view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
 
         // Define camera position and orientation
-        glm::vec3 cameraPos = glm::vec3(0.0f, 5.0f, 10.0f); // 5 units above the origin on the y-axis
+        glm::vec3 cameraPos = glm::vec3(0.0f, 20.0f, 20.0f); // 5 units above the origin on the y-axis
         glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f); // Looking at the origin
         glm::vec3 cameraUp = glm::vec3(0.0f, 0.0f, -1.0f); // Up vector is opposite to the direction we're looking
 
@@ -266,7 +410,7 @@ int main() {
 
         // Set light properties
         glUniform3f(glGetUniformLocation(shaderProgram, "lightColor"), 1.0f, 1.0f, 1.0f);
-        glUniform3f(glGetUniformLocation(shaderProgram, "lightPos"), 1.2f, 1.0f, 2.0f);
+        glUniform3f(glGetUniformLocation(shaderProgram, "lightPos"), 1.2f, 10.0f, 2.0f);
         glUniform3f(glGetUniformLocation(shaderProgram, "objectColor"), 1.0f, 0.5f, 0.31f);
 
         // Render the plane with a specific color
@@ -275,30 +419,73 @@ int main() {
         glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(planeModel));
         glDrawArrays(GL_TRIANGLES, 0, 6);
 
-        // Render the first cube with a specific color
-        glUniform3f(glGetUniformLocation(shaderProgram, "objectColor"), 1.0f, 0.0f, 0.0f); // Set the cube color to red
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(-1.0f, 0.0f, 0.0f)); // Move to the left
-        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-        glBindVertexArray(cubeVAO);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+        // Render the cuboids
+        for (int i = 0; i < numCuboids; ++i) {
+            glUniform3f(glGetUniformLocation(shaderProgram, "objectColor"), colors[i][0], colors[i][1], colors[i][2]);
+            glm::mat4 model = glm::mat4(1.0f);
+            model = glm::translate(model, glm::vec3(positions[i][0], positions[i][1], positions[i][2]));
+            glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+            glBindVertexArray(cuboidVAO);
 
-        // Render the second cube with a specific color
-        glUniform3f(glGetUniformLocation(shaderProgram, "objectColor"), 0.0f, 0.0f, 1.0f); // Set the cube color to blue
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(1.0f, 0.0f, 0.0f)); // Move to the right
-        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-        glBindVertexArray(cubeVAO);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+            // Each cuboid has 6 faces, and each face is drawn with 4 vertices (2 triangles)
+            for (int face = 0; face < 6; ++face) {
+                // Calculate the starting vertex index for the current face
+                int startVertex = i * 24 + face * 4;
+                glDrawArrays(GL_TRIANGLE_STRIP, startVertex, 4);
+            }
+        }
 
+        // Update ball position
+        ballPos += ballVel;
+
+        // Check collision with plane limits
+        if (ballPos.x - ballRadius < -10.0f || ballPos.x + ballRadius > 10.0f) {
+            ballVel.x = -ballVel.x;
+        }
+        if (ballPos.z - ballRadius < -10.0f || ballPos.z + ballRadius > 10.0f) {
+            ballVel.z = -ballVel.z;
+        }
+
+        // Check collision with cuboids
+        for (int i = 0; i < numCuboids; ++i) {
+            float h = dimensions[i][0];
+            float l = dimensions[i][1];
+            float w = dimensions[i][2];
+            float x = positions[i][0];
+            float y = positions[i][1];
+            float z = positions[i][2];
+            glm::vec3 cuboidPos = glm::vec3(x,y,z);
+            glm::vec3 cuboidHalfExtents = glm::vec3(l / 2.0f, h / 2.0f, w / 2.0f);
+
+            glm::vec3 closestPoint = glm::clamp(ballPos, cuboidPos - cuboidHalfExtents, cuboidPos + cuboidHalfExtents);
+            glm::vec3 direction = ballPos - closestPoint;
+            float distance = glm::length(direction);
+
+            if (distance < ballRadius) {
+                glm::vec3 normal = glm::normalize(direction);
+                ballPos = closestPoint + normal * ballRadius;
+                ballVel = glm::reflect(ballVel, normal);
+            }
+        }
+
+        // Ensure ball stays at a fixed y-coordinate
+        ballPos.y =1.0f;
+
+        // Render the ball
+        glUniform3f(glGetUniformLocation(shaderProgram, "objectColor"), 1.0f, 1.0f, 1.0f); // Set the ball color to white
+        glm::mat4 ballModel = glm::mat4(1.0f);
+        ballModel = glm::translate(ballModel, ballPos);
+        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(ballModel));
+        glBindVertexArray(ballVAO);
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, (20 + 1) * (20 + 1));
         // Swap buffers and poll IO events
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
 
     // Clean up
-    glDeleteVertexArrays(1, &cubeVAO);
-    glDeleteBuffers(1, &cubeVBO);
+    glDeleteVertexArrays(1, &cuboidVAO);
+    glDeleteBuffers(1, &cuboidVBO);
     glDeleteVertexArrays(1, &planeVAO);
     glDeleteBuffers(1, &planeVBO);
     glDeleteProgram(shaderProgram);

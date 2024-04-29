@@ -24,9 +24,6 @@
     <ClCompile Include="Dependencies\STB_IMAGE\include\additional.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\design_V2.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Library Include="Dependencies\GLFW\lib-vc2022\glfw3.lib" />
