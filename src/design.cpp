@@ -86,42 +86,55 @@ void addVertexData(float* vertices, int& index, float x, float y, float z, float
     vertices[index++] = ty;
 }
 
-void generateRectangle(float l, float h, float w, float x, float y, float z, float* vertices, int& vertexIndex) {
-    // Front face
-    addVertexData(vertices, vertexIndex, x - l / 2.0f, y - h / 2.0f, z + w / 2.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f); // Bottom left
-    addVertexData(vertices, vertexIndex, x + l / 2.0f, y - h / 2.0f, z + w / 2.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f); // Bottom right
-    addVertexData(vertices, vertexIndex, x - l / 2.0f, y + h / 2.0f, z + w / 2.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f); // Top left
-    addVertexData(vertices, vertexIndex, x + l / 2.0f, y + h / 2.0f, z + w / 2.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f); // Top right
+void generateCuboid(float length, float height, float width, std::vector<float>& vertices, std::vector<unsigned int>& indices) {
+    // Generate vertices for the cuboid
+    vertices = {
+        // Front face
+        -length / 2, -height / 2, width / 2, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+        length / 2, -height / 2, width / 2, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f,
+        length / 2, height / 2, width / 2, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,
+        -length / 2, height / 2, width / 2, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f,
 
-    // Back face
-    addVertexData(vertices, vertexIndex, x - l / 2.0f, y - h / 2.0f, z - w / 2.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f); // Bottom left
-    addVertexData(vertices, vertexIndex, x - l / 2.0f, y + h / 2.0f, z - w / 2.0f, 0.0f, 0.0f, -1.0f, 0.0f, 1.0f); // Top left
-    addVertexData(vertices, vertexIndex, x + l / 2.0f, y - h / 2.0f, z - w / 2.0f, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f); // Bottom right
-    addVertexData(vertices, vertexIndex, x + l / 2.0f, y + h / 2.0f, z - w / 2.0f, 0.0f, 0.0f, -1.0f, 1.0f, 1.0f); // Top right
+        // Back face
+        -length / 2, -height / 2, -width / 2, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f,
+        length / 2, -height / 2, -width / 2, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f,
+        length / 2, height / 2, -width / 2, 0.0f, 0.0f, -1.0f, 1.0f, 1.0f,
+        -length / 2, height / 2, -width / 2, 0.0f, 0.0f, -1.0f, 0.0f, 1.0f,
 
-    // Left face
-    addVertexData(vertices, vertexIndex, x - l / 2.0f, y - h / 2.0f, z - w / 2.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f); // Bottom left
-    addVertexData(vertices, vertexIndex, x - l / 2.0f, y - h / 2.0f, z + w / 2.0f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f); // Bottom right
-    addVertexData(vertices, vertexIndex, x - l / 2.0f, y + h / 2.0f, z - w / 2.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f); // Top left
-    addVertexData(vertices, vertexIndex, x - l / 2.0f, y + h / 2.0f, z + w / 2.0f, -1.0f, 0.0f, 0.0f, 1.0f, 1.0f); // Top right
+        // Left face
+        -length / 2, -height / 2, -width / 2, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+        -length / 2, -height / 2, width / 2, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+        -length / 2, height / 2, width / 2, -1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
+        -length / 2, height / 2, -width / 2, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f,
 
-    // Right face
-    addVertexData(vertices, vertexIndex, x + l / 2.0f, y - h / 2.0f, z - w / 2.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f); // Bottom left
-    addVertexData(vertices, vertexIndex, x + l / 2.0f, y + h / 2.0f, z - w / 2.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f); // Top left
-    addVertexData(vertices, vertexIndex, x + l / 2.0f, y - h / 2.0f, z + w / 2.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f); // Bottom right
-    addVertexData(vertices, vertexIndex, x + l / 2.0f, y + h / 2.0f, z + w / 2.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f); // Top right
+        // Right face
+        length / 2, -height / 2, -width / 2, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+        length / 2, -height / 2, width / 2, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+        length / 2, height / 2, width / 2, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
+        length / 2, height / 2, -width / 2, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f,
 
-    // Top face
-    addVertexData(vertices, vertexIndex, x - l / 2.0f, y + h / 2.0f, z - w / 2.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f); // Bottom left
-    addVertexData(vertices, vertexIndex, x + l / 2.0f, y + h / 2.0f, z - w / 2.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f); // Bottom right
-    addVertexData(vertices, vertexIndex, x - l / 2.0f, y + h / 2.0f, z + w / 2.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f); // Top left
-    addVertexData(vertices, vertexIndex, x + l / 2.0f, y + h / 2.0f, z + w / 2.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f); // Top right
+        // Top face
+        -length / 2, height / 2, width / 2, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+        length / 2, height / 2, width / 2, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+        length / 2, height / 2, -width / 2, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+        -length / 2, height / 2, -width / 2, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
 
-    // Bottom face
-    addVertexData(vertices, vertexIndex, x - l / 2.0f, y - h / 2.0f, z - w / 2.0f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f); // Bottom left
-    addVertexData(vertices, vertexIndex, x - l / 2.0f, y - h / 2.0f, z + w / 2.0f, 0.0f, -1.0f, 0.0f, 0.0f, 1.0f); // Top left
-    addVertexData(vertices, vertexIndex, x + l / 2.0f, y - h / 2.0f, z - w / 2.0f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f); // Bottom right
-    addVertexData(vertices, vertexIndex, x + l / 2.0f, y - h / 2.0f, z + w / 2.0f, 0.0f, -1.0f, 0.0f, 1.0f, 1.0f); // Top right
+        // Bottom face
+        -length / 2, -height / 2, width / 2, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+        length / 2, -height / 2, width / 2, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+        length / 2, -height / 2, -width / 2, 0.0f, -1.0f, 0.0f, 1.0f, 1.0f,
+        -length / 2, -height / 2, -width / 2, 0.0f, -1.0f, 0.0f, 0.0f, 1.0f
+    };
+
+    // Generate indices for the cuboid
+    indices = {
+        0, 1, 2, 0, 2, 3,       // Front face
+        4, 5, 6, 4, 6, 7,       // Back face
+        8, 9, 10, 8, 10, 11,    // Left face
+        12, 13, 14, 12, 14, 15, // Right face
+        16, 17, 18, 16, 18, 19, // Top face
+        20, 21, 22, 20, 22, 23  // Bottom face
+    };
 }
 
 
@@ -176,8 +189,8 @@ void generateSphere(float radius, int segments, int rings, std::vector<float>& v
 }
 
 // Ball variables 
-glm::vec3 ballInitialVelocity = glm::vec3(0.0f, 0.0f, 0.0f);
-glm::vec3 ballInitialPosition = glm::vec3(0.0f, 2.0f,10.0f);
+glm::vec3 ballInitialVelocity = glm::vec3(0.0f, 0.0f, -10.0f);
+glm::vec3 ballInitialPosition = glm::vec3(4.0f, 0.0f,9.0f);
 glm::vec3 ballVelocity = ballInitialVelocity;
 glm::vec3 ballPosition = ballInitialPosition; // Initial velocity
 float ballRadius = 0.5f;
@@ -266,14 +279,14 @@ int main() {
     const float brickSpacing = 0.05f;
 
     // Calculate the total number of cuboids (including bricks)
-    const int numNonBrick =1;
+    const int numNonBrick =4;
     int brickIndex = numNonBrick;
     //const int numCuboids = numNonBrick + numBrickRows * numBrickCols;
     const int numCuboids = numNonBrick;
     float positions[numCuboids][3] = {
-        //{0.0f, 0.0f, -4.0f},
-       // {-4.0f,  0.0f, 0.0f},
-       // {4.0f,  0.0f,  0.0f},
+        {0.0f, 0.0f, -10.0f},
+        {-10.0f,  0.0f, 0.0f},
+        {10.0f,  0.0f,  0.0f},
           {0.0f,  0.5f, 4.0f},
    
         
@@ -281,18 +294,18 @@ int main() {
     };
 
     float colors[numCuboids][3] = {
-      //  {1.0f, 1.0f, 0.0f}, // Yellow
-       // {1.0f, 1.0f, 0.0f}, // Yellow
-       // {1.0f, 1.0f, 0.0f}, // Yellow
+        {1.0f, 1.0f, 0.0f}, // Yellow
+        {1.0f, 1.0f, 0.0f}, // Yellow
+        {1.0f, 1.0f, 0.0f}, // Yellow
          {1.0f, 1.0f, 0.0f}, // Yellow
       
         // The remaining colors will be filled with brick colors
     };
 
     float dimensions[numCuboids][3] = {
-       // {1.0f, 20.0f, 1.0f}, // Dimensions for cuboid 0 (length, height, width)
-       // {1.0f, 1.0f, 20.0f}, // Dimensions for cuboid 1 (length, height, width)
-      //  {1.0f, 1.0f, 20.0f}, // Dimensions for cuboid 2 (length, height, width)
+        {20.0f, 1.0f, 1.0f}, // Dimensions for cuboid 0 (length, height, width)
+        {1.0f, 1.0f, 20.0f}, // Dimensions for cuboid 1 (length, height, width)
+        {1.0f, 1.0f, 20.0f}, // Dimensions for cuboid 2 (length, height, width)
         {1.0f,1.0f, 6.0f},
        
         // The remaining dimensions will be filled with brick dimensions
@@ -334,25 +347,16 @@ int main() {
     }*/
 
     // Vertex Buffer Object and Vertex Array Object for the cuboids
-    unsigned int cuboidVAO, cuboidVBO;
-    glGenVertexArrays(1, &cuboidVAO);
-    glGenBuffers(1, &cuboidVBO);
-    glBindVertexArray(cuboidVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, cuboidVBO);
-
-    // Generate cuboid vertex data and buffer it
-    int totalVertices = 0;
-    for (int i = 0; i < numCuboids; ++i) {
-        totalVertices += 24; // Each cuboid has 24 vertices
-    }
-    float* cuboidVertices = new float[totalVertices * 8]; // Each vertex has 8 floats (3 position, 3 normal, 2 texture coordinates)
-    int vertexIndex = 0;
+    
 
     std::vector<btCollisionShape*> cuboidShapes(numCuboids);
     std::vector<btRigidBody*> cuboidRigidBodies(numCuboids);
+    std::vector<unsigned int> cuboidVAOs(numCuboids);
+    std::vector<unsigned int> cuboidVBOs(numCuboids);
+    std::vector<unsigned int> cuboidEBOs(numCuboids);
+    std::vector<std::vector<unsigned int>> cuboidIndices(numCuboids);
 
     for (int i = 0; i < numCuboids; ++i) {
-        generateRectangle(dimensions[i][0], dimensions[i][1], dimensions[i][2], positions[i][0], positions[i][1], positions[i][2], cuboidVertices, vertexIndex);
         // Create Bullet Physics collision shape for the cuboid
         btVector3 cuboidHalfExtents(dimensions[i][0] / 2.0f, dimensions[i][1] / 2.0f, dimensions[i][2] / 2.0f);
         btCollisionShape* cuboidShape = new btBoxShape(cuboidHalfExtents);
@@ -378,20 +382,32 @@ int main() {
         // Store the cuboid collision shape and rigid body in the vectors
         cuboidShapes[i] = cuboidShape;
         cuboidRigidBodies[i] = cuboidRigidBody;
+
+        // Generate and bind VAO, VBO, and EBO for the cuboid
+        glGenVertexArrays(1, &cuboidVAOs[i]);
+        glGenBuffers(1, &cuboidVBOs[i]);
+        glGenBuffers(1, &cuboidEBOs[i]);
+        glBindVertexArray(cuboidVAOs[i]);
+
+        std::vector<float> cuboidVertices;
+        generateCuboid(dimensions[i][0], dimensions[i][1], dimensions[i][2], cuboidVertices, cuboidIndices[i]);
+
+        glBindBuffer(GL_ARRAY_BUFFER, cuboidVBOs[i]);
+        glBufferData(GL_ARRAY_BUFFER, cuboidVertices.size() * sizeof(float), &cuboidVertices[0], GL_STATIC_DRAW);
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cuboidEBOs[i]);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, cuboidIndices[i].size() * sizeof(unsigned int), &cuboidIndices[i][0], GL_STATIC_DRAW);
+
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+        glEnableVertexAttribArray(2);
     }
 
 
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * totalVertices * 8, cuboidVertices, GL_STATIC_DRAW);
-    // Set vertex attribute pointers for the rectangles
-    // Position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-    // Normal attribute
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-    // Texture coordinate attribute
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-    glEnableVertexAttribArray(2);
+    
 
 
 
@@ -408,8 +424,8 @@ int main() {
     ballShape->calculateLocalInertia(ballMass, ballLocalInertia);
     btDefaultMotionState* ballMotionState = new btDefaultMotionState(ballTransform);
     btRigidBody::btRigidBodyConstructionInfo ballRigidBodyCI(ballMass, ballMotionState, ballShape, ballLocalInertia);
-    ballRigidBodyCI.m_restitution = 0.5f;
-    ballRigidBodyCI.m_friction = 0.5f;
+    ballRigidBodyCI.m_restitution = 1.0f;
+    ballRigidBodyCI.m_friction = 0.0f;
     btRigidBody* ballRigidBody = new btRigidBody(ballRigidBodyCI);
     ballRigidBody->setLinearVelocity(btVector3(ballVelocity.x, ballVelocity.y, ballVelocity.z));
     dynamicsWorld->addRigidBody(ballRigidBody);
@@ -443,7 +459,6 @@ int main() {
     glEnableVertexAttribArray(2);
     // Unbind the VAO
     glBindVertexArray(0);
-    delete[] cuboidVertices; // Free the dynamically allocated memory
 
 
     // Shader compilation
@@ -491,8 +506,8 @@ int main() {
         // Update ball position and velocity using Bullet Physics simulation
         dynamicsWorld->stepSimulation(deltaTime, 10);
 
-        // Update ball position and velocity using Bullet Physics simulation
-        dynamicsWorld->stepSimulation(deltaTime, 10);
+        // Remove upward velocity component
+        
 
         // Log cuboid positions, velocities, and sizes
         
@@ -503,7 +518,9 @@ int main() {
         ballPosition = glm::vec3(ballTransform.getOrigin().getX(), ballTransform.getOrigin().getY(), ballTransform.getOrigin().getZ());
         ballVelocity = glm::vec3(ballRigidBody->getLinearVelocity().getX(), ballRigidBody->getLinearVelocity().getY(), ballRigidBody->getLinearVelocity().getZ());
 
-
+        btVector3 ballVelocity = ballRigidBody->getLinearVelocity();
+        ballVelocity.setY(std::min(ballVelocity.getY(), 0.0f));
+        ballRigidBody->setLinearVelocity(ballVelocity);
         // Render commands here
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -571,24 +588,16 @@ int main() {
 
         // Render the cuboids
         for (int i = 0; i < numCuboids; ++i) {
-            // ADDED: Retrieve the updated positions from the rigid bodies
             btTransform cuboidTransform;
             cuboidRigidBodies[i]->getMotionState()->getWorldTransform(cuboidTransform);
             glm::vec3 cuboidPosition = glm::vec3(cuboidTransform.getOrigin().getX(), cuboidTransform.getOrigin().getY(), cuboidTransform.getOrigin().getZ());
 
             glUniform3f(glGetUniformLocation(shaderProgram, "objectColor"), colors[i][0], colors[i][1], colors[i][2]);
             glm::mat4 model = glm::mat4(1.0f);
-            // MODIFIED: Use the updated cuboid position for translation
             model = glm::translate(model, cuboidPosition);
             glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-            glBindVertexArray(cuboidVAO);
-
-            // Each cuboid has 6 faces, and each face is drawn with 4 vertices (2 triangles)
-            for (int face = 0; face < 6; ++face) {
-                // Calculate the starting vertex index for the current face
-                int startVertex = i * 24 + face * 4;
-                glDrawArrays(GL_TRIANGLE_STRIP, startVertex, 4);
-            }
+            glBindVertexArray(cuboidVAOs[i]);
+            glDrawElements(GL_TRIANGLES, cuboidIndices[i].size(), GL_UNSIGNED_INT, 0);
         }
 
         // Render the ball using indexed rendering
@@ -602,8 +611,7 @@ int main() {
     }
 
     // Clean up
-    glDeleteVertexArrays(1, &cuboidVAO);
-    glDeleteBuffers(1, &cuboidVBO);
+ 
     glDeleteVertexArrays(1, &planeVAO);
     glDeleteBuffers(1, &planeVBO);
     glDeleteProgram(shaderProgram);
@@ -626,7 +634,12 @@ int main() {
     delete overlappingPairCache;
     delete dispatcher;
     delete collisionConfiguration;
- 
+    // Clean up
+    for (int i = 0; i < numCuboids; ++i) {
+        glDeleteVertexArrays(1, &cuboidVAOs[i]);
+        glDeleteBuffers(1, &cuboidVBOs[i]);
+        glDeleteBuffers(1, &cuboidEBOs[i]);
+    }
 
   
 

@@ -1,9 +1,10 @@
 ﻿  design.cpp
-C:\Users\alext\source\repos\brick-breaker-0.1\src\design.cpp(195,45): warning C4305: 'argument': truncation from 'double' to 'const btScalar'
+C:\Users\alext\source\repos\brick-breaker-0.1\src\design.cpp(208,45): warning C4305: 'argument': truncation from 'double' to 'const btScalar'
+C:\Users\alext\source\repos\brick-breaker-0.1\src\design.cpp(600,63): warning C4267: 'argument': conversion from 'size_t' to 'GLsizei', possible loss of data
 LINK : warning LNK4098: defaultlib 'LIBCMTD' conflicts with use of other libs; use /NODEFAULTLIB:library
   Generating code
-  6 of 577 functions ( 1.0%) were compiled, the rest were copied from previous compilation.
-    0 functions were new in current compilation
+  4 of 655 functions ( 0.6%) were compiled, the rest were copied from previous compilation.
+    2 functions were new in current compilation
     0 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
   project.vcxproj -> C:\Users\alext\source\repos\brick-breaker-0.1\x64\Release\project.exe
