@@ -47,6 +47,7 @@ in vec2 TexCoords;
 
 uniform vec3 lightColor;
 uniform vec3 lightPos;
+uniform vec3 viewPos;
 uniform vec3 objectColor;
 
 void main() {
@@ -58,7 +59,14 @@ void main() {
     float diff = max(dot(norm, lightDir), 0.0);
     vec3 diffuse = diff * lightColor;
 
-    vec3 result = (ambient + diffuse) * objectColor;
+    float specularStrength = 0.5;
+    float shininess = 32.0;
+    vec3 viewDir = normalize(viewPos - FragPos);
+    vec3 reflectDir = reflect(-lightDir, norm);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), shininess);
+    vec3 specular = specularStrength * spec * lightColor;
+
+    vec3 result = (ambient + diffuse + specular) * objectColor;
     FragColor = vec4(result, 1.0);
 }
 )glsl";
@@ -114,7 +122,11 @@ void generateRectangle(float h, float l, float w, float x, float y, float z, flo
 }
 
 
-void generateSphere(float radius, int segments, int rings, std::vector<float>& vertices) {
+
+std::vector<float> ballVertices;
+std::vector<unsigned int> ballIndices;
+
+void generateSphere(float radius, int segments, int rings, std::vector<float>& vertices, std::vector<unsigned int>& indices) {
     for (int i = 0; i <= rings; ++i) {
         float v = static_cast<float>(i) / static_cast<float>(rings);
         float phi = v * glm::pi<float>();
@@ -143,12 +155,32 @@ void generateSphere(float radius, int segments, int rings, std::vector<float>& v
             vertices.push_back(v);
         }
     }
+
+    for (int i = 0; i < rings; ++i) {
+        for (int j = 0; j < segments; ++j) {
+            int nextI = (i + 1) % (rings + 1);
+            int nextJ = (j + 1) % (segments + 1);
+
+            // Two triangles per quad
+            indices.push_back(i * (segments + 1) + j);
+            indices.push_back(nextI * (segments + 1) + j);
+            indices.push_back(nextI * (segments + 1) + nextJ);
+
+            indices.push_back(i * (segments + 1) + j);
+            indices.push_back(nextI * (segments + 1) + nextJ);
+            indices.push_back(i * (segments + 1) + nextJ);
+        }
+    }
 }
 
 // Ball variables 
-glm::vec3 ballPos = glm::vec3(0.0f, 0.5f, 0.0f); // Initial position just above the plane
-glm::vec3 ballVel = glm::vec3(0.3f, 0.0f, 0.3f); // Initial velocity
+glm::vec3 ballInitialVelocity = glm::vec3(5.0f, 0.0f,6.0f);
+glm::vec3 ballInitialPosition = glm::vec3(5.0f, 1.0f, 6.0f);
+glm::vec3 ballVelocity = ballInitialVelocity;
+glm::vec3 ballPosition = ballInitialPosition; // Initial velocity
 float ballRadius = 0.5f;
+int sphereSegments = 40; // Increase segments and rings for a smoother sphere
+int sphereRings = 40;
 
 int main() {
     // Initialize GLFW
@@ -220,14 +252,17 @@ int main() {
     const float brickSpacing = 0.05f;
 
     // Calculate the total number of cuboids (including bricks)
-    const int numCuboids = 3 + numBrickRows * numBrickCols;
+    const int numNonBrick = 5;
+    int brickIndex = numNonBrick;
+    const int numCuboids = numNonBrick + numBrickRows * numBrickCols;
 
     float positions[numCuboids][3] = {
         {0.0f, 0.5f, -4.0f},
         {-4.0f, 0.5f, 0.0f},
         {4.0f, 0.5f,  0.0f},
-        { 1.0f, 0.0f,  1.0f},
-        { 2.0f, 0.0f,  2.0f}
+        {0.0f, 0.0f,  3.0f},
+        {0.0f, 1.0f,  3.0f},
+        
         // The remaining positions will be filled with brick positions
     };
 
@@ -235,7 +270,8 @@ int main() {
         {1.0f, 1.0f, 0.0f}, // Yellow
         {1.0f, 1.0f, 0.0f}, // Yellow
         {1.0f, 1.0f, 0.0f}, // Yellow
-     
+        {0.0f, 1.0f, 0.0f}, 
+        {1.0f, 1.0f, 0.0f},
         // The remaining colors will be filled with brick colors
     };
 
@@ -243,7 +279,8 @@ int main() {
         {1.0f, 20.0f, 1.0f}, // Dimensions for cuboid 0 (length, height, width)
         {1.0f, 1.0f, 20.0f}, // Dimensions for cuboid 1 (length, height, width)
         {1.0f, 1.0f, 20.0f}, // Dimensions for cuboid 2 (length, height, width)
-  
+        {1.0f, 2.0f, 4.0f},
+        {6.5f,1.2f, 0.2f},
         // The remaining dimensions will be filled with brick dimensions
     };
 
@@ -257,7 +294,7 @@ int main() {
     const float brickStartZ = -3.5f;
     const float totalBrickWidth = brickEndX - brickStartX;
     // Generate brick positions, colors, and dimensions
-    int brickIndex = 3; // Start index for bricks in the arrays
+     // Start index for bricks in the arrays
     for (int row = 0; row < numBrickRows; ++row) {
         for (int col = 0; col < numBrickCols; ++col) {
             float brickX = brickStartX + (col * totalBrickWidth) / (numBrickCols - 1);
@@ -310,15 +347,25 @@ int main() {
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
     glEnableVertexAttribArray(2);
 
-    unsigned int ballVAO, ballVBO;
+    // Generate sphere vertices and indices
+    std::vector<float> ballVertices;
+    std::vector<unsigned int> ballIndices;
+    generateSphere(ballRadius, sphereSegments, sphereRings, ballVertices, ballIndices);
+
+    // Create and bind the VAO for the ball
+    unsigned int ballVAO, ballVBO, ballEBO;
     glGenVertexArrays(1, &ballVAO);
     glGenBuffers(1, &ballVBO);
+    glGenBuffers(1, &ballEBO);
     glBindVertexArray(ballVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, ballVBO);
 
-    std::vector<float> ballVertices;
-    generateSphere(ballRadius, 20, 20, ballVertices);
+    // Buffer the vertex data
+    glBindBuffer(GL_ARRAY_BUFFER, ballVBO);
     glBufferData(GL_ARRAY_BUFFER, ballVertices.size() * sizeof(float), &ballVertices[0], GL_STATIC_DRAW);
+
+    // Buffer the index data
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ballEBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, ballIndices.size() * sizeof(unsigned int), &ballIndices[0], GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
@@ -369,6 +416,91 @@ int main() {
         // Input
         processInput(window);
 
+        // Update ball position and velocity
+        float deltaTime = 0.01f; // Assuming a constant time step for simplicity
+        ballPosition += ballVelocity * deltaTime;
+
+        // Check collision with plane limits
+        if (ballPosition.x - ballRadius < -10.0f || ballPosition.x + ballRadius > 10.0f) {
+            ballVelocity.x = -ballVelocity.x;
+        }
+        if (ballPosition.z - ballRadius < -10.0f || ballPosition.z + ballRadius > 10.0f) {
+            ballVelocity.z = -ballVelocity.z;
+        }
+
+        // Check collision with cuboids
+        for (int i = 0; i < numCuboids; ++i) {
+            float h = dimensions[i][0];
+            float l = dimensions[i][1];
+            float w = dimensions[i][2];
+            float x = positions[i][0];
+            float y = positions[i][1];
+            float z = positions[i][2];
+
+            // Calculate the minimum and maximum coordinates of the cuboid
+            glm::vec3 cuboidMin = glm::vec3(x - l / 2.0f, y - h / 2.0f, z - w / 2.0f);
+            glm::vec3 cuboidMax = glm::vec3(x + l / 2.0f, y + h / 2.0f, z + w / 2.0f);
+
+            // Calculate the minimum and maximum coordinates of the ball
+            glm::vec3 ballMin = ballPosition - glm::vec3(ballRadius);
+            glm::vec3 ballMax = ballPosition + glm::vec3(ballRadius);
+
+            // Check for overlap between the ball and cuboid on each axis
+            bool collisionX = ballMax.x >= cuboidMin.x && ballMin.x <= cuboidMax.x;
+            bool collisionY = ballMax.y >= cuboidMin.y && ballMin.y <= cuboidMax.y;
+            bool collisionZ = ballMax.z >= cuboidMin.z && ballMin.z <= cuboidMax.z;
+
+            // If there is a collision on all three axes, resolve the collision
+            if (collisionX && collisionY && collisionZ) {
+                // Calculate the overlap on each axis
+                float overlapX = std::min(ballMax.x - cuboidMin.x, cuboidMax.x - ballMin.x);
+                float overlapY = std::min(ballMax.y - cuboidMin.y, cuboidMax.y - ballMin.y);
+                float overlapZ = std::min(ballMax.z - cuboidMin.z, cuboidMax.z - ballMin.z);
+
+                // Find the axis with the minimum overlap
+                if (overlapX < overlapY && overlapX < overlapZ) {
+                    // Collision on the X-axis
+                    if (ballPosition.x < x) {
+                        // Ball is on the left side of the cuboid
+                        ballPosition.x -= overlapX;
+                    }
+                    else {
+                        // Ball is on the right side of the cuboid
+                        ballPosition.x += overlapX;
+                    }
+                    ballVelocity.x = -ballVelocity.x;
+                }
+                else if (overlapY < overlapX && overlapY < overlapZ) {
+                    // Collision on the Y-axis
+                    if (ballPosition.y < y) {
+                        // Ball is below the cuboid
+                        ballPosition.y -= overlapY;
+                    }
+                    else {
+                        // Ball is above the cuboid
+                        ballPosition.y += overlapY;
+                    }
+                    ballVelocity.y = -ballVelocity.y;
+                }
+                else {
+                    // Collision on the Z-axis
+                    if (ballPosition.z < z) {
+                        // Ball is behind the cuboid
+                        ballPosition.z -= overlapZ;
+                    }
+                    else {
+                        // Ball is in front of the cuboid
+                        ballPosition.z += overlapZ;
+                    }
+                    ballVelocity.z = -ballVelocity.z;
+                }
+            }
+        }
+
+        // Ensure ball stays at a fixed y-coordinate
+
+        ballPosition.y = 1.0f;
+
         // Render commands here
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -385,15 +517,12 @@ int main() {
         glm::mat4 planeModel = glm::mat4(1.0f);
         planeModel = glm::translate(planeModel, glm::vec3(0.0f, 0.0f, 0.0f)); // Slightly below the origin
 
-
         model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(0.5f, 1.0f, 0.0f));
 
-        //view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
-
         // Define camera position and orientation
-        glm::vec3 cameraPos = glm::vec3(0.0f, 20.0f, 20.0f); // 5 units above the origin on the y-axis
+        glm::vec3 cameraPos = glm::vec3(0.0f, 20.0f, 20.0f); // Position the camera at (0, 0, 20)
         glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f); // Looking at the origin
-        glm::vec3 cameraUp = glm::vec3(0.0f, 0.0f, -1.0f); // Up vector is opposite to the direction we're looking
+        glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f); // Up vector is the positive y-axis
 
         // Create the view matrix using glm::lookAt
         view = glm::lookAt(cameraPos, cameraTarget, cameraUp);
@@ -412,7 +541,7 @@ int main() {
         glUniform3f(glGetUniformLocation(shaderProgram, "lightColor"), 1.0f, 1.0f, 1.0f);
         glUniform3f(glGetUniformLocation(shaderProgram, "lightPos"), 1.2f, 10.0f, 2.0f);
         glUniform3f(glGetUniformLocation(shaderProgram, "objectColor"), 1.0f, 0.5f, 0.31f);
-
+        glUniform3fv(glGetUniformLocation(shaderProgram, "viewPos"), 1, glm::value_ptr(cameraPos));
         // Render the plane with a specific color
         glUniform3f(glGetUniformLocation(shaderProgram, "objectColor"), 0.5f, 0.8f, 0.7f); // Set the plane color to a light blue-green
         glBindVertexArray(planeVAO);
@@ -435,49 +564,11 @@ int main() {
             }
         }
 
-        // Update ball position
-        ballPos += ballVel;
-
-        // Check collision with plane limits
-        if (ballPos.x - ballRadius < -10.0f || ballPos.x + ballRadius > 10.0f) {
-            ballVel.x = -ballVel.x;
-        }
-        if (ballPos.z - ballRadius < -10.0f || ballPos.z + ballRadius > 10.0f) {
-            ballVel.z = -ballVel.z;
-        }
-
-        // Check collision with cuboids
-        for (int i = 0; i < numCuboids; ++i) {
-            float h = dimensions[i][0];
-            float l = dimensions[i][1];
-            float w = dimensions[i][2];
-            float x = positions[i][0];
-            float y = positions[i][1];
-            float z = positions[i][2];
-            glm::vec3 cuboidPos = glm::vec3(x,y,z);
-            glm::vec3 cuboidHalfExtents = glm::vec3(l / 2.0f, h / 2.0f, w / 2.0f);
-
-            glm::vec3 closestPoint = glm::clamp(ballPos, cuboidPos - cuboidHalfExtents, cuboidPos + cuboidHalfExtents);
-            glm::vec3 direction = ballPos - closestPoint;
-            float distance = glm::length(direction);
-
-            if (distance < ballRadius) {
-                glm::vec3 normal = glm::normalize(direction);
-                ballPos = closestPoint + normal * ballRadius;
-                ballVel = glm::reflect(ballVel, normal);
-            }
-        }
-
-        // Ensure ball stays at a fixed y-coordinate
-        ballPos.y =1.0f;
-
-        // Render the ball
-        glUniform3f(glGetUniformLocation(shaderProgram, "objectColor"), 1.0f, 1.0f, 1.0f); // Set the ball color to white
-        glm::mat4 ballModel = glm::mat4(1.0f);
-        ballModel = glm::translate(ballModel, ballPos);
-        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(ballModel));
+        // Render the ball using indexed rendering
         glBindVertexArray(ballVAO);
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, (20 + 1) * (20 + 1));
+        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(glm::translate(glm::mat4(1.0f), ballPosition)));
+        glDrawElements(GL_TRIANGLES, static_cast<unsigned int>(ballIndices.size()), GL_UNSIGNED_INT, 0);
+
         // Swap buffers and poll IO events
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -489,6 +580,8 @@ int main() {
     glDeleteVertexArrays(1, &planeVAO);
     glDeleteBuffers(1, &planeVBO);
     glDeleteProgram(shaderProgram);
+    glDeleteBuffers(1, &ballEBO);
+
 
     // Terminate GLFW
     glfwTerminate();
