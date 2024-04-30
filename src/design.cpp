@@ -11,6 +11,11 @@
 
 #include <btBulletDynamicsCommon.h>
 
+float cuboidMoveSpeed = 0.1f;
+glm::vec3 cuboidMoveDirection(0.0f, 0.0f, 0.0f);
+int selectedCuboidIndex = 0;
+float cuboidMinX = -5.0f;
+float cuboidMaxX = 5.0f;
 
 const unsigned int SCREEN_WIDTH = 800;
 const unsigned int SCREEN_HEIGHT = 600;
@@ -279,21 +284,23 @@ int main() {
     const float brickSpacing = 0.05f;
 
     // Calculate the total number of cuboids (including bricks)
-    const int numNonBrick =4;
+    const int numNonBrick =5;
     int brickIndex = numNonBrick;
     //const int numCuboids = numNonBrick + numBrickRows * numBrickCols;
     const int numCuboids = numNonBrick;
     float positions[numCuboids][3] = {
+        {0.0f, 0.0f, 7.0f},
         {0.0f, 0.0f, -10.0f},
         {-10.0f,  0.0f, 0.0f},
         {10.0f,  0.0f,  0.0f},
-          {0.0f,  0.5f, 4.0f},
+           {0.0f, 0.0f, 10.0f}
    
         
         // The remaining positions will be filled with brick positions
     };
 
     float colors[numCuboids][3] = {
+        {1.0f, 1.0f, 0.0f},
         {1.0f, 1.0f, 0.0f}, // Yellow
         {1.0f, 1.0f, 0.0f}, // Yellow
         {1.0f, 1.0f, 0.0f}, // Yellow
@@ -303,10 +310,11 @@ int main() {
     };
 
     float dimensions[numCuboids][3] = {
+        {4.0f, 1.0f, 1.0f},
         {20.0f, 1.0f, 1.0f}, // Dimensions for cuboid 0 (length, height, width)
         {1.0f, 1.0f, 20.0f}, // Dimensions for cuboid 1 (length, height, width)
         {1.0f, 1.0f, 20.0f}, // Dimensions for cuboid 2 (length, height, width)
-        {1.0f,1.0f, 6.0f},
+        {20.0f, 1.0f, 1.0f}
        
         // The remaining dimensions will be filled with brick dimensions
     };
@@ -372,9 +380,17 @@ int main() {
 
         btDefaultMotionState* cuboidMotionState = new btDefaultMotionState(cuboidTransform);
         btRigidBody::btRigidBodyConstructionInfo cuboidRigidBodyCI(cuboidMass, cuboidMotionState, cuboidShape, cuboidLocalInertia);
-        cuboidRigidBodyCI.m_restitution = 0.5f;
-        cuboidRigidBodyCI.m_friction = 0.5f;
+        cuboidRigidBodyCI.m_restitution = 1.0f;
+        cuboidRigidBodyCI.m_friction = 0.0f;
+
         btRigidBody* cuboidRigidBody = new btRigidBody(cuboidRigidBodyCI);
+
+        if (i == selectedCuboidIndex) {
+            // Enable collision detection for the selected cuboid
+            cuboidRigidBody->setCollisionFlags(cuboidRigidBody->getCollisionFlags() & ~btCollisionObject::CF_KINEMATIC_OBJECT);
+            cuboidRigidBody->setCollisionFlags(cuboidRigidBody->getCollisionFlags() | btCollisionObject::CF_DYNAMIC_OBJECT);
+        }
+
 
         // Add the cuboid rigid body to the dynamics world
         dynamicsWorld->addRigidBody(cuboidRigidBody);
@@ -506,18 +522,31 @@ int main() {
         // Update ball position and velocity using Bullet Physics simulation
         dynamicsWorld->stepSimulation(deltaTime, 10);
 
-        // Remove upward velocity component
-        
+        // Get the ball's current velocity
+        btVector3 currentVelocity = ballRigidBody->getLinearVelocity();
 
-        // Log cuboid positions, velocities, and sizes
-        
+        // Calculate the speed of the ball
+        btScalar speed = currentVelocity.length();
 
+        // Define the desired constant speed
+        btScalar constantSpeed = 10.0f; // Adjust the value as needed
+
+        // Check if the current speed is not zero to avoid division by zero
+        if (speed != 0.0f) {
+            // Calculate the velocity direction
+            btVector3 velocityDirection = currentVelocity.normalized();
+
+            // Set the new velocity with the constant speed and the current direction
+            btVector3 newVelocity = velocityDirection * constantSpeed;
+
+            // Update the ball's velocity
+            ballRigidBody->setLinearVelocity(newVelocity);
+        }
 
         btTransform ballTransform;
         ballRigidBody->getMotionState()->getWorldTransform(ballTransform);
         ballPosition = glm::vec3(ballTransform.getOrigin().getX(), ballTransform.getOrigin().getY(), ballTransform.getOrigin().getZ());
         ballVelocity = glm::vec3(ballRigidBody->getLinearVelocity().getX(), ballRigidBody->getLinearVelocity().getY(), ballRigidBody->getLinearVelocity().getZ());
-
         btVector3 ballVelocity = ballRigidBody->getLinearVelocity();
         ballVelocity.setY(std::min(ballVelocity.getY(), 0.0f));
         ballRigidBody->setLinearVelocity(ballVelocity);
@@ -575,7 +604,7 @@ int main() {
         glm::vec3 planePosition = glm::vec3(finalPlaneModel[3][0], finalPlaneModel[3][1], finalPlaneModel[3][2]);
 
         // Create the Bullet Physics plane at the same position as the rendering plane
-        btCollisionShape* planeShape = new btStaticPlaneShape(btVector3(0, 1, 0), planePosition.y); // Adjust the constant value by adding 3.0f
+        btCollisionShape* planeShape = new btStaticPlaneShape(btVector3(0, 1, 0), planePosition.y);
         btTransform planeTransform;
         planeTransform.setIdentity();
         planeTransform.setOrigin(btVector3(planePosition.x, planePosition.y, planePosition.z));
@@ -583,8 +612,27 @@ int main() {
         btVector3 planeLocalInertia(0, 0, 0);
         btDefaultMotionState* planeMotionState = new btDefaultMotionState(planeTransform);
         btRigidBody::btRigidBodyConstructionInfo planeRigidBodyCI(planeMass, planeMotionState, planeShape, planeLocalInertia);
+        planeRigidBodyCI.m_restitution = 1.0f; // Set restitution to 1 for perfectly elastic collisions
+        planeRigidBodyCI.m_friction = 0.0f; // Set friction to 0 to avoid slowing down
         btRigidBody* planeRigidBody = new btRigidBody(planeRigidBodyCI);
         dynamicsWorld->addRigidBody(planeRigidBody);
+
+        // Update the position of the selected cuboid based on user input
+        int selectedCuboidIndex = 0;
+        btTransform cuboidTransform;
+        cuboidRigidBodies[selectedCuboidIndex]->getMotionState()->getWorldTransform(cuboidTransform);
+        glm::vec3 cuboidPosition = glm::vec3(cuboidTransform.getOrigin().getX(), cuboidTransform.getOrigin().getY(), cuboidTransform.getOrigin().getZ());
+        cuboidPosition += cuboidMoveDirection * cuboidMoveSpeed;
+
+        // Clamp the cuboid position within the x-coordinate limits
+        cuboidPosition.x = glm::clamp(cuboidPosition.x, cuboidMinX, cuboidMaxX);
+
+        cuboidTransform.setOrigin(btVector3(cuboidPosition.x, cuboidPosition.y, cuboidPosition.z));
+        cuboidRigidBodies[selectedCuboidIndex]->getMotionState()->setWorldTransform(cuboidTransform);
+
+        // Synchronize the Bullet Physics world with the updated cuboid position
+        cuboidRigidBodies[selectedCuboidIndex]->setWorldTransform(cuboidTransform);
+        cuboidRigidBodies[selectedCuboidIndex]->getMotionState()->setWorldTransform(cuboidTransform);
 
         // Render the cuboids
         for (int i = 0; i < numCuboids; ++i) {
@@ -657,5 +705,14 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 void processInput(GLFWwindow* window) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, true);
+    }
+
+    // Update cuboid move direction based on left and right arrow key inputs
+    cuboidMoveDirection = glm::vec3(0.0f, 0.0f, 0.0f);
+    if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
+        cuboidMoveDirection.x = -1.0f;
+    }
+    if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
+        cuboidMoveDirection.x = 1.0f;
     }
 }
