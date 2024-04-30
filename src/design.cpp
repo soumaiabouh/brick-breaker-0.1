@@ -86,44 +86,43 @@ void addVertexData(float* vertices, int& index, float x, float y, float z, float
     vertices[index++] = ty;
 }
 
-void generateRectangle(float h, float l, float w, float x, float y, float z, float* vertices, int& vertexIndex) {
+void generateRectangle(float l, float h, float w, float x, float y, float z, float* vertices, int& vertexIndex) {
     // Front face
     addVertexData(vertices, vertexIndex, x - l / 2.0f, y - h / 2.0f, z + w / 2.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f); // Bottom left
-    addVertexData(vertices, vertexIndex, x - l / 2.0f, y + h / 2.0f, z + w / 2.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f); // Top left
     addVertexData(vertices, vertexIndex, x + l / 2.0f, y - h / 2.0f, z + w / 2.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f); // Bottom right
+    addVertexData(vertices, vertexIndex, x - l / 2.0f, y + h / 2.0f, z + w / 2.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f); // Top left
     addVertexData(vertices, vertexIndex, x + l / 2.0f, y + h / 2.0f, z + w / 2.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f); // Top right
 
     // Back face
-    addVertexData(vertices, vertexIndex, x + l / 2.0f, y - h / 2.0f, z - w / 2.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f); // Bottom right
-    addVertexData(vertices, vertexIndex, x + l / 2.0f, y + h / 2.0f, z - w / 2.0f, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f); // Top right
-    addVertexData(vertices, vertexIndex, x - l / 2.0f, y - h / 2.0f, z - w / 2.0f, 0.0f, 0.0f, -1.0f, 0.0f, 1.0f); // Bottom left
-    addVertexData(vertices, vertexIndex, x - l / 2.0f, y + h / 2.0f, z - w / 2.0f, 0.0f, 0.0f, -1.0f, 1.0f, 1.0f); // Top left
+    addVertexData(vertices, vertexIndex, x - l / 2.0f, y - h / 2.0f, z - w / 2.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f); // Bottom left
+    addVertexData(vertices, vertexIndex, x - l / 2.0f, y + h / 2.0f, z - w / 2.0f, 0.0f, 0.0f, -1.0f, 0.0f, 1.0f); // Top left
+    addVertexData(vertices, vertexIndex, x + l / 2.0f, y - h / 2.0f, z - w / 2.0f, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f); // Bottom right
+    addVertexData(vertices, vertexIndex, x + l / 2.0f, y + h / 2.0f, z - w / 2.0f, 0.0f, 0.0f, -1.0f, 1.0f, 1.0f); // Top right
 
     // Left face
     addVertexData(vertices, vertexIndex, x - l / 2.0f, y - h / 2.0f, z - w / 2.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f); // Bottom left
-    addVertexData(vertices, vertexIndex, x - l / 2.0f, y + h / 2.0f, z - w / 2.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f); // Top left
     addVertexData(vertices, vertexIndex, x - l / 2.0f, y - h / 2.0f, z + w / 2.0f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f); // Bottom right
+    addVertexData(vertices, vertexIndex, x - l / 2.0f, y + h / 2.0f, z - w / 2.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f); // Top left
     addVertexData(vertices, vertexIndex, x - l / 2.0f, y + h / 2.0f, z + w / 2.0f, -1.0f, 0.0f, 0.0f, 1.0f, 1.0f); // Top right
 
     // Right face
-    addVertexData(vertices, vertexIndex, x + l / 2.0f, y - h / 2.0f, z + w / 2.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f); // Bottom left
-    addVertexData(vertices, vertexIndex, x + l / 2.0f, y + h / 2.0f, z + w / 2.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f); // Top left
-    addVertexData(vertices, vertexIndex, x + l / 2.0f, y - h / 2.0f, z - w / 2.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f); // Bottom right
-    addVertexData(vertices, vertexIndex, x + l / 2.0f, y + h / 2.0f, z - w / 2.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f); // Top right
+    addVertexData(vertices, vertexIndex, x + l / 2.0f, y - h / 2.0f, z - w / 2.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f); // Bottom left
+    addVertexData(vertices, vertexIndex, x + l / 2.0f, y + h / 2.0f, z - w / 2.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f); // Top left
+    addVertexData(vertices, vertexIndex, x + l / 2.0f, y - h / 2.0f, z + w / 2.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f); // Bottom right
+    addVertexData(vertices, vertexIndex, x + l / 2.0f, y + h / 2.0f, z + w / 2.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f); // Top right
 
     // Top face
     addVertexData(vertices, vertexIndex, x - l / 2.0f, y + h / 2.0f, z - w / 2.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f); // Bottom left
-    addVertexData(vertices, vertexIndex, x - l / 2.0f, y + h / 2.0f, z + w / 2.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f); // Top left
-    addVertexData(vertices, vertexIndex, x + l / 2.0f, y + h / 2.0f, z - w / 2.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f); // Bottom right
+    addVertexData(vertices, vertexIndex, x + l / 2.0f, y + h / 2.0f, z - w / 2.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f); // Bottom right
+    addVertexData(vertices, vertexIndex, x - l / 2.0f, y + h / 2.0f, z + w / 2.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f); // Top left
     addVertexData(vertices, vertexIndex, x + l / 2.0f, y + h / 2.0f, z + w / 2.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f); // Top right
 
     // Bottom face
-    addVertexData(vertices, vertexIndex, x - l / 2.0f, y - h / 2.0f, z + w / 2.0f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f); // Bottom left
-    addVertexData(vertices, vertexIndex, x + l / 2.0f, y - h / 2.0f, z + w / 2.0f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f); // Bottom right
-    addVertexData(vertices, vertexIndex, x - l / 2.0f, y - h / 2.0f, z - w / 2.0f, 0.0f, -1.0f, 0.0f, 0.0f, 1.0f); // Top left
-    addVertexData(vertices, vertexIndex, x + l / 2.0f, y - h / 2.0f, z - w / 2.0f, 0.0f, -1.0f, 0.0f, 1.0f, 1.0f); // Top right
+    addVertexData(vertices, vertexIndex, x - l / 2.0f, y - h / 2.0f, z - w / 2.0f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f); // Bottom left
+    addVertexData(vertices, vertexIndex, x - l / 2.0f, y - h / 2.0f, z + w / 2.0f, 0.0f, -1.0f, 0.0f, 0.0f, 1.0f); // Top left
+    addVertexData(vertices, vertexIndex, x + l / 2.0f, y - h / 2.0f, z - w / 2.0f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f); // Bottom right
+    addVertexData(vertices, vertexIndex, x + l / 2.0f, y - h / 2.0f, z + w / 2.0f, 0.0f, -1.0f, 0.0f, 1.0f, 1.0f); // Top right
 }
-
 
 
 std::vector<float> ballVertices;
@@ -177,8 +176,8 @@ void generateSphere(float radius, int segments, int rings, std::vector<float>& v
 }
 
 // Ball variables 
-glm::vec3 ballInitialVelocity = glm::vec3(5.0f, 0.0f,6.0f);
-glm::vec3 ballInitialPosition = glm::vec3(5.0f, 1.5f, 6.0f);
+glm::vec3 ballInitialVelocity = glm::vec3(0.0f, 0.0f, 0.0f);
+glm::vec3 ballInitialPosition = glm::vec3(0.0f, 2.0f,10.0f);
 glm::vec3 ballVelocity = ballInitialVelocity;
 glm::vec3 ballPosition = ballInitialPosition; // Initial velocity
 float ballRadius = 0.5f;
@@ -193,7 +192,7 @@ int main() {
     btBroadphaseInterface* overlappingPairCache = new btDbvtBroadphase();
     btSequentialImpulseConstraintSolver* solver = new btSequentialImpulseConstraintSolver;
     btDiscreteDynamicsWorld* dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfiguration);
-    dynamicsWorld->setGravity(btVector3(0, 0, 0));
+    dynamicsWorld->setGravity(btVector3(0, -9.8, 0));
     // Initialize GLFW
     if (!glfwInit()) {
         std::cerr << "Failed to initialize GLFW" << std::endl;
@@ -226,7 +225,6 @@ int main() {
         return -1;
     }
 
-    // Vertex data for a plane
     float planeVertices[] = {
         // Positions          // Normals           // Texture Coords
         -10.0f, 0.0f, -10.0f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f,
@@ -239,10 +237,11 @@ int main() {
 
 
 
+
     // Vertex Buffer Object and Vertex Array Object for the plane
     unsigned int planeVAO, planeVBO;
 
-    // Generate and bind the VAO and VBO for the plane
+    // Generate and bind the VAO and VBO for the planeradius
     glGenVertexArrays(1, &planeVAO);
     glGenBuffers(1, &planeVBO);
     glBindVertexArray(planeVAO);
@@ -256,19 +255,8 @@ int main() {
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
     glEnableVertexAttribArray(2);
 
-    // Create Bullet Physics shape and rigid body for the plane
-    /*btCollisionShape* planeShape = new btStaticPlaneShape(btVector3(0, 1, 0), 0);
-    btTransform planeTransform;
-    planeTransform.setIdentity();
-    btScalar planeMass(0.0f);
-    btVector3 planeLocalInertia(0, 0, 0);
-    btDefaultMotionState* planeMotionState = new btDefaultMotionState(planeTransform);
-    btRigidBody::btRigidBodyConstructionInfo planeRigidBodyCI(planeMass, planeMotionState, planeShape, planeLocalInertia);
-    btRigidBody* planeRigidBody = new btRigidBody(planeRigidBodyCI);
-    dynamicsWorld->addRigidBody(planeRigidBody);
-    planeRigidBodyCI.m_restitution = 0.5f;
-    planeRigidBodyCI.m_friction = 0.5f;*/
-
+  
+   
     // Brick configuration
     const int numBrickRows = 4;
     const int numBrickCols = 8;
@@ -278,35 +266,35 @@ int main() {
     const float brickSpacing = 0.05f;
 
     // Calculate the total number of cuboids (including bricks)
-    const int numNonBrick = 5;
+    const int numNonBrick =1;
     int brickIndex = numNonBrick;
-    const int numCuboids = numNonBrick + numBrickRows * numBrickCols;
-
+    //const int numCuboids = numNonBrick + numBrickRows * numBrickCols;
+    const int numCuboids = numNonBrick;
     float positions[numCuboids][3] = {
-        {0.0f, 0.5f, -4.0f},
-        {-4.0f, 0.5f, 0.0f},
-        {4.0f, 0.5f,  0.0f},
-        {0.0f, 0.0f,  3.0f},
-        {0.0f, 1.0f,  3.0f},
+        //{0.0f, 0.0f, -4.0f},
+       // {-4.0f,  0.0f, 0.0f},
+       // {4.0f,  0.0f,  0.0f},
+          {0.0f,  0.5f, 4.0f},
+   
         
         // The remaining positions will be filled with brick positions
     };
 
     float colors[numCuboids][3] = {
-        {1.0f, 1.0f, 0.0f}, // Yellow
-        {1.0f, 1.0f, 0.0f}, // Yellow
-        {1.0f, 1.0f, 0.0f}, // Yellow
-        {0.0f, 1.0f, 0.0f}, 
-        {1.0f, 1.0f, 0.0f},
+      //  {1.0f, 1.0f, 0.0f}, // Yellow
+       // {1.0f, 1.0f, 0.0f}, // Yellow
+       // {1.0f, 1.0f, 0.0f}, // Yellow
+         {1.0f, 1.0f, 0.0f}, // Yellow
+      
         // The remaining colors will be filled with brick colors
     };
 
     float dimensions[numCuboids][3] = {
-        {1.0f, 20.0f, 1.0f}, // Dimensions for cuboid 0 (length, height, width)
-        {1.0f, 1.0f, 20.0f}, // Dimensions for cuboid 1 (length, height, width)
-        {1.0f, 1.0f, 20.0f}, // Dimensions for cuboid 2 (length, height, width)
-        {1.0f, 2.0f, 4.0f},
-        {6.5f,1.2f, 0.2f},
+       // {1.0f, 20.0f, 1.0f}, // Dimensions for cuboid 0 (length, height, width)
+       // {1.0f, 1.0f, 20.0f}, // Dimensions for cuboid 1 (length, height, width)
+      //  {1.0f, 1.0f, 20.0f}, // Dimensions for cuboid 2 (length, height, width)
+        {1.0f,1.0f, 6.0f},
+       
         // The remaining dimensions will be filled with brick dimensions
     };
 
@@ -321,7 +309,9 @@ int main() {
     const float totalBrickWidth = brickEndX - brickStartX;
     // Generate brick positions, colors, and dimensions
      // Start index for bricks in the arrays
-    for (int row = 0; row < numBrickRows; ++row) {
+
+
+    /*for (int row = 0; row < numBrickRows; ++row) {
         for (int col = 0; col < numBrickCols; ++col) {
             float brickX = brickStartX + (col * totalBrickWidth) / (numBrickCols - 1);
             float brickY = brickStartY + 0.5;
@@ -341,7 +331,7 @@ int main() {
 
             ++brickIndex;
         }
-    }
+    }*/
 
     // Vertex Buffer Object and Vertex Array Object for the cuboids
     unsigned int cuboidVAO, cuboidVBO;
@@ -358,9 +348,39 @@ int main() {
     float* cuboidVertices = new float[totalVertices * 8]; // Each vertex has 8 floats (3 position, 3 normal, 2 texture coordinates)
     int vertexIndex = 0;
 
+    std::vector<btCollisionShape*> cuboidShapes(numCuboids);
+    std::vector<btRigidBody*> cuboidRigidBodies(numCuboids);
+
     for (int i = 0; i < numCuboids; ++i) {
         generateRectangle(dimensions[i][0], dimensions[i][1], dimensions[i][2], positions[i][0], positions[i][1], positions[i][2], cuboidVertices, vertexIndex);
+        // Create Bullet Physics collision shape for the cuboid
+        btVector3 cuboidHalfExtents(dimensions[i][0] / 2.0f, dimensions[i][1] / 2.0f, dimensions[i][2] / 2.0f);
+        btCollisionShape* cuboidShape = new btBoxShape(cuboidHalfExtents);
+
+        // Create Bullet Physics rigid body for the cuboid
+        btTransform cuboidTransform;
+        cuboidTransform.setIdentity();
+        cuboidTransform.setOrigin(btVector3(positions[i][0], positions[i][1], positions[i][2]));
+
+        btScalar cuboidMass(0.0f); // Set mass to a non-zero value for dynamic objects
+        btVector3 cuboidLocalInertia(0, 0, 0);
+        cuboidShape->calculateLocalInertia(cuboidMass, cuboidLocalInertia);
+
+        btDefaultMotionState* cuboidMotionState = new btDefaultMotionState(cuboidTransform);
+        btRigidBody::btRigidBodyConstructionInfo cuboidRigidBodyCI(cuboidMass, cuboidMotionState, cuboidShape, cuboidLocalInertia);
+        cuboidRigidBodyCI.m_restitution = 0.5f;
+        cuboidRigidBodyCI.m_friction = 0.5f;
+        btRigidBody* cuboidRigidBody = new btRigidBody(cuboidRigidBodyCI);
+
+        // Add the cuboid rigid body to the dynamics world
+        dynamicsWorld->addRigidBody(cuboidRigidBody);
+
+        // Store the cuboid collision shape and rigid body in the vectors
+        cuboidShapes[i] = cuboidShape;
+        cuboidRigidBodies[i] = cuboidRigidBody;
     }
+
+
     glBufferData(GL_ARRAY_BUFFER, sizeof(float) * totalVertices * 8, cuboidVertices, GL_STATIC_DRAW);
     // Set vertex attribute pointers for the rectangles
     // Position attribute
@@ -374,29 +394,10 @@ int main() {
     glEnableVertexAttribArray(2);
 
 
-    // Create Bullet Physics shapes and rigid bodies for cuboids
-    std::vector<btCollisionShape*> cuboidShapes(numCuboids);
-    std::vector<btRigidBody*> cuboidRigidBodies(numCuboids);
-    for (int i = 0; i < numCuboids; ++i) {
-        btVector3 cuboidHalfExtents(dimensions[i][0] / 2.0f, dimensions[i][1] / 2.0f, dimensions[i][2] / 2.0f);
-        cuboidShapes[i] = new btBoxShape(cuboidHalfExtents);
 
-        btTransform cuboidTransform;
-        cuboidTransform.setIdentity();
-        cuboidTransform.setOrigin(btVector3(positions[i][0], positions[i][1], positions[i][2]));
-
-        btScalar cuboidMass(0.0f); // Set mass to 0 for static objects
-        btVector3 cuboidLocalInertia(0, 0, 0);
-
-        btDefaultMotionState* cuboidMotionState = new btDefaultMotionState(cuboidTransform);
-        btRigidBody::btRigidBodyConstructionInfo cuboidRigidBodyCI(cuboidMass, cuboidMotionState, cuboidShapes[i], cuboidLocalInertia);
-        cuboidRigidBodyCI.m_restitution = 0.5f;
-        cuboidRigidBodyCI.m_friction = 0.5f;
-        cuboidRigidBodies[i] = new btRigidBody(cuboidRigidBodyCI);
-
-        dynamicsWorld->addRigidBody(cuboidRigidBodies[i]);
-    }
-
+    
+    
+    
     // Create Bullet Physics shape and rigid body for the ball
     btCollisionShape* ballShape = new btSphereShape(ballRadius);
     btTransform ballTransform;
@@ -412,6 +413,7 @@ int main() {
     btRigidBody* ballRigidBody = new btRigidBody(ballRigidBodyCI);
     ballRigidBody->setLinearVelocity(btVector3(ballVelocity.x, ballVelocity.y, ballVelocity.z));
     dynamicsWorld->addRigidBody(ballRigidBody);
+    // COLLISION ///////////////////////
 
     // Generate sphere vertices and indices
     std::vector<float> ballVertices;
@@ -484,10 +486,18 @@ int main() {
 
         // Update ball position and velocity
         float deltaTime = 0.01f; // Assuming a constant time step for simplicity
-        ballPosition += ballVelocity * deltaTime;
+        //ballPosition += ballVelocity * deltaTime;
 
         // Update ball position and velocity using Bullet Physics simulation
         dynamicsWorld->stepSimulation(deltaTime, 10);
+
+        // Update ball position and velocity using Bullet Physics simulation
+        dynamicsWorld->stepSimulation(deltaTime, 10);
+
+        // Log cuboid positions, velocities, and sizes
+        
+
+
         btTransform ballTransform;
         ballRigidBody->getMotionState()->getWorldTransform(ballTransform);
         ballPosition = glm::vec3(ballTransform.getOrigin().getX(), ballTransform.getOrigin().getY(), ballTransform.getOrigin().getZ());
@@ -506,16 +516,18 @@ int main() {
         glm::mat4 view = glm::mat4(1.0f);
         glm::mat4 projection = glm::mat4(1.0f);
 
-        // Set up the transformation matrices for the plane
         glm::mat4 planeModel = glm::mat4(1.0f);
-        planeModel = glm::translate(planeModel, glm::vec3(0.0f, 0.0f, 0.0f)); // Slightly below the origin
+        planeModel = glm::translate(planeModel, glm::vec3(0.0f, 0.0f, 0.0f)); // Translate the plane to y = -3
+
+
+
 
         model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(0.5f, 1.0f, 0.0f));
 
         // Define camera position and orientation
-        glm::vec3 cameraPos = glm::vec3(0.0f, 20.0f, 20.0f); // Position the camera at (0, 0, 20)
-        glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f); // Looking at the origin
-        glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f); // Up vector is the positive y-axis
+        glm::vec3 cameraPos = glm::vec3(17.0f, 6.0f, 17.0f);     // Camera position at the corner of the plane
+        glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);  // Looking at the origin
+        glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);      // Up vector is the positive y-axis
 
         // Create the view matrix using glm::lookAt
         view = glm::lookAt(cameraPos, cameraTarget, cameraUp);
@@ -541,11 +553,33 @@ int main() {
         glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(planeModel));
         glDrawArrays(GL_TRIANGLES, 0, 6);
 
+        // Get the final model matrix of the rendering plane
+        glm::mat4 finalPlaneModel = planeModel * model;
+        glm::vec3 planePosition = glm::vec3(finalPlaneModel[3][0], finalPlaneModel[3][1], finalPlaneModel[3][2]);
+
+        // Create the Bullet Physics plane at the same position as the rendering plane
+        btCollisionShape* planeShape = new btStaticPlaneShape(btVector3(0, 1, 0), planePosition.y); // Adjust the constant value by adding 3.0f
+        btTransform planeTransform;
+        planeTransform.setIdentity();
+        planeTransform.setOrigin(btVector3(planePosition.x, planePosition.y, planePosition.z));
+        btScalar planeMass(0.0f); // Set mass to 0 for static objects
+        btVector3 planeLocalInertia(0, 0, 0);
+        btDefaultMotionState* planeMotionState = new btDefaultMotionState(planeTransform);
+        btRigidBody::btRigidBodyConstructionInfo planeRigidBodyCI(planeMass, planeMotionState, planeShape, planeLocalInertia);
+        btRigidBody* planeRigidBody = new btRigidBody(planeRigidBodyCI);
+        dynamicsWorld->addRigidBody(planeRigidBody);
+
         // Render the cuboids
         for (int i = 0; i < numCuboids; ++i) {
+            // ADDED: Retrieve the updated positions from the rigid bodies
+            btTransform cuboidTransform;
+            cuboidRigidBodies[i]->getMotionState()->getWorldTransform(cuboidTransform);
+            glm::vec3 cuboidPosition = glm::vec3(cuboidTransform.getOrigin().getX(), cuboidTransform.getOrigin().getY(), cuboidTransform.getOrigin().getZ());
+
             glUniform3f(glGetUniformLocation(shaderProgram, "objectColor"), colors[i][0], colors[i][1], colors[i][2]);
             glm::mat4 model = glm::mat4(1.0f);
-            model = glm::translate(model, glm::vec3(positions[i][0], positions[i][1], positions[i][2]));
+            // MODIFIED: Use the updated cuboid position for translation
+            model = glm::translate(model, cuboidPosition);
             glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
             glBindVertexArray(cuboidVAO);
 
@@ -574,6 +608,7 @@ int main() {
     glDeleteBuffers(1, &planeVBO);
     glDeleteProgram(shaderProgram);
     glDeleteBuffers(1, &ballEBO);
+
     // Cleanup Bullet Physics objects
     for (int i = 0; i < numCuboids; ++i) {
         dynamicsWorld->removeRigidBody(cuboidRigidBodies[i]);
@@ -581,6 +616,7 @@ int main() {
         delete cuboidRigidBodies[i];
         delete cuboidShapes[i];
     }
+
     dynamicsWorld->removeRigidBody(ballRigidBody);
     delete ballRigidBody->getMotionState();
     delete ballRigidBody;
@@ -590,16 +626,9 @@ int main() {
     delete overlappingPairCache;
     delete dispatcher;
     delete collisionConfiguration;
-    /*delete planeRigidBody->getMotionState();
-    delete planeRigidBody;
-    delete planeShape;*/
+ 
 
-    for (int i = 0; i < numCuboids; ++i) {
-        dynamicsWorld->removeRigidBody(cuboidRigidBodies[i]);
-        delete cuboidRigidBodies[i]->getMotionState();
-        delete cuboidRigidBodies[i];
-        delete cuboidShapes[i];
-    }
+  
 
     // Terminate GLFW
     glfwTerminate();
@@ -613,7 +642,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 }
 
 void processInput(GLFWwindow* window) {
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)  {
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, true);
     }
 }
