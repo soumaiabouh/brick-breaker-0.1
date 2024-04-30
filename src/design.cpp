@@ -9,6 +9,9 @@
 #include <string>
 #include <vector>
 
+#include <btBulletDynamicsCommon.h>
+
+
 const unsigned int SCREEN_WIDTH = 800;
 const unsigned int SCREEN_HEIGHT = 600;
 
@@ -175,7 +178,7 @@ void generateSphere(float radius, int segments, int rings, std::vector<float>& v
 
 // Ball variables 
 glm::vec3 ballInitialVelocity = glm::vec3(5.0f, 0.0f,6.0f);
-glm::vec3 ballInitialPosition = glm::vec3(5.0f, 1.0f, 6.0f);
+glm::vec3 ballInitialPosition = glm::vec3(5.0f, 1.5f, 6.0f);
 glm::vec3 ballVelocity = ballInitialVelocity;
 glm::vec3 ballPosition = ballInitialPosition; // Initial velocity
 float ballRadius = 0.5f;
@@ -183,6 +186,14 @@ int sphereSegments = 40; // Increase segments and rings for a smoother sphere
 int sphereRings = 40;
 
 int main() {
+
+    // Bullet Physics initialization
+    btDefaultCollisionConfiguration* collisionConfiguration = new btDefaultCollisionConfiguration();
+    btCollisionDispatcher* dispatcher = new btCollisionDispatcher(collisionConfiguration);
+    btBroadphaseInterface* overlappingPairCache = new btDbvtBroadphase();
+    btSequentialImpulseConstraintSolver* solver = new btSequentialImpulseConstraintSolver;
+    btDiscreteDynamicsWorld* dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfiguration);
+    dynamicsWorld->setGravity(btVector3(0, 0, 0));
     // Initialize GLFW
     if (!glfwInit()) {
         std::cerr << "Failed to initialize GLFW" << std::endl;
@@ -226,6 +237,8 @@ int main() {
         -10.0f, 0.0f, -10.0f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f
     };
 
+
+
     // Vertex Buffer Object and Vertex Array Object for the plane
     unsigned int planeVAO, planeVBO;
 
@@ -242,6 +255,19 @@ int main() {
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
     glEnableVertexAttribArray(2);
+
+    // Create Bullet Physics shape and rigid body for the plane
+    /*btCollisionShape* planeShape = new btStaticPlaneShape(btVector3(0, 1, 0), 0);
+    btTransform planeTransform;
+    planeTransform.setIdentity();
+    btScalar planeMass(0.0f);
+    btVector3 planeLocalInertia(0, 0, 0);
+    btDefaultMotionState* planeMotionState = new btDefaultMotionState(planeTransform);
+    btRigidBody::btRigidBodyConstructionInfo planeRigidBodyCI(planeMass, planeMotionState, planeShape, planeLocalInertia);
+    btRigidBody* planeRigidBody = new btRigidBody(planeRigidBodyCI);
+    dynamicsWorld->addRigidBody(planeRigidBody);
+    planeRigidBodyCI.m_restitution = 0.5f;
+    planeRigidBodyCI.m_friction = 0.5f;*/
 
     // Brick configuration
     const int numBrickRows = 4;
@@ -347,6 +373,46 @@ int main() {
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
     glEnableVertexAttribArray(2);
 
+
+    // Create Bullet Physics shapes and rigid bodies for cuboids
+    std::vector<btCollisionShape*> cuboidShapes(numCuboids);
+    std::vector<btRigidBody*> cuboidRigidBodies(numCuboids);
+    for (int i = 0; i < numCuboids; ++i) {
+        btVector3 cuboidHalfExtents(dimensions[i][0] / 2.0f, dimensions[i][1] / 2.0f, dimensions[i][2] / 2.0f);
+        cuboidShapes[i] = new btBoxShape(cuboidHalfExtents);
+
+        btTransform cuboidTransform;
+        cuboidTransform.setIdentity();
+        cuboidTransform.setOrigin(btVector3(positions[i][0], positions[i][1], positions[i][2]));
+
+        btScalar cuboidMass(0.0f); // Set mass to 0 for static objects
+        btVector3 cuboidLocalInertia(0, 0, 0);
+
+        btDefaultMotionState* cuboidMotionState = new btDefaultMotionState(cuboidTransform);
+        btRigidBody::btRigidBodyConstructionInfo cuboidRigidBodyCI(cuboidMass, cuboidMotionState, cuboidShapes[i], cuboidLocalInertia);
+        cuboidRigidBodyCI.m_restitution = 0.5f;
+        cuboidRigidBodyCI.m_friction = 0.5f;
+        cuboidRigidBodies[i] = new btRigidBody(cuboidRigidBodyCI);
+
+        dynamicsWorld->addRigidBody(cuboidRigidBodies[i]);
+    }
+
+    // Create Bullet Physics shape and rigid body for the ball
+    btCollisionShape* ballShape = new btSphereShape(ballRadius);
+    btTransform ballTransform;
+    ballTransform.setIdentity();
+    ballTransform.setOrigin(btVector3(ballPosition.x, ballPosition.y, ballPosition.z));
+    btScalar ballMass(1.0f);
+    btVector3 ballLocalInertia(0, 0, 0);
+    ballShape->calculateLocalInertia(ballMass, ballLocalInertia);
+    btDefaultMotionState* ballMotionState = new btDefaultMotionState(ballTransform);
+    btRigidBody::btRigidBodyConstructionInfo ballRigidBodyCI(ballMass, ballMotionState, ballShape, ballLocalInertia);
+    ballRigidBodyCI.m_restitution = 0.5f;
+    ballRigidBodyCI.m_friction = 0.5f;
+    btRigidBody* ballRigidBody = new btRigidBody(ballRigidBodyCI);
+    ballRigidBody->setLinearVelocity(btVector3(ballVelocity.x, ballVelocity.y, ballVelocity.z));
+    dynamicsWorld->addRigidBody(ballRigidBody);
+
     // Generate sphere vertices and indices
     std::vector<float> ballVertices;
     std::vector<unsigned int> ballIndices;
@@ -420,86 +486,13 @@ int main() {
         float deltaTime = 0.01f; // Assuming a constant time step for simplicity
         ballPosition += ballVelocity * deltaTime;
 
-        // Check collision with plane limits
-        if (ballPosition.x - ballRadius < -10.0f || ballPosition.x + ballRadius > 10.0f) {
-            ballVelocity.x = -ballVelocity.x;
-        }
-        if (ballPosition.z - ballRadius < -10.0f || ballPosition.z + ballRadius > 10.0f) {
-            ballVelocity.z = -ballVelocity.z;
-        }
+        // Update ball position and velocity using Bullet Physics simulation
+        dynamicsWorld->stepSimulation(deltaTime, 10);
+        btTransform ballTransform;
+        ballRigidBody->getMotionState()->getWorldTransform(ballTransform);
+        ballPosition = glm::vec3(ballTransform.getOrigin().getX(), ballTransform.getOrigin().getY(), ballTransform.getOrigin().getZ());
+        ballVelocity = glm::vec3(ballRigidBody->getLinearVelocity().getX(), ballRigidBody->getLinearVelocity().getY(), ballRigidBody->getLinearVelocity().getZ());
 
-        // Check collision with cuboids
-        for (int i = 0; i < numCuboids; ++i) {
-            float h = dimensions[i][0];
-            float l = dimensions[i][1];
-            float w = dimensions[i][2];
-            float x = positions[i][0];
-            float y = positions[i][1];
-            float z = positions[i][2];
-
-            // Calculate the minimum and maximum coordinates of the cuboid
-            glm::vec3 cuboidMin = glm::vec3(x - l / 2.0f, y - h / 2.0f, z - w / 2.0f);
-            glm::vec3 cuboidMax = glm::vec3(x + l / 2.0f, y + h / 2.0f, z + w / 2.0f);
-
-            // Calculate the minimum and maximum coordinates of the ball
-            glm::vec3 ballMin = ballPosition - glm::vec3(ballRadius);
-            glm::vec3 ballMax = ballPosition + glm::vec3(ballRadius);
-
-            // Check for overlap between the ball and cuboid on each axis
-            bool collisionX = ballMax.x >= cuboidMin.x && ballMin.x <= cuboidMax.x;
-            bool collisionY = ballMax.y >= cuboidMin.y && ballMin.y <= cuboidMax.y;
-            bool collisionZ = ballMax.z >= cuboidMin.z && ballMin.z <= cuboidMax.z;
-
-            // If there is a collision on all three axes, resolve the collision
-            if (collisionX && collisionY && collisionZ) {
-                // Calculate the overlap on each axis
-                float overlapX = std::min(ballMax.x - cuboidMin.x, cuboidMax.x - ballMin.x);
-                float overlapY = std::min(ballMax.y - cuboidMin.y, cuboidMax.y - ballMin.y);
-                float overlapZ = std::min(ballMax.z - cuboidMin.z, cuboidMax.z - ballMin.z);
-
-                // Find the axis with the minimum overlap
-                if (overlapX < overlapY && overlapX < overlapZ) {
-                    // Collision on the X-axis
-                    if (ballPosition.x < x) {
-                        // Ball is on the left side of the cuboid
-                        ballPosition.x -= overlapX;
-                    }
-                    else {
-                        // Ball is on the right side of the cuboid
-                        ballPosition.x += overlapX;
-                    }
-                    ballVelocity.x = -ballVelocity.x;
-                }
-                else if (overlapY < overlapX && overlapY < overlapZ) {
-                    // Collision on the Y-axis
-                    if (ballPosition.y < y) {
-                        // Ball is below the cuboid
-                        ballPosition.y -= overlapY;
-                    }
-                    else {
-                        // Ball is above the cuboid
-                        ballPosition.y += overlapY;
-                    }
-                    ballVelocity.y = -ballVelocity.y;
-                }
-                else {
-                    // Collision on the Z-axis
-                    if (ballPosition.z < z) {
-                        // Ball is behind the cuboid
-                        ballPosition.z -= overlapZ;
-                    }
-                    else {
-                        // Ball is in front of the cuboid
-                        ballPosition.z += overlapZ;
-                    }
-                    ballVelocity.z = -ballVelocity.z;
-                }
-            }
-        }
-
-        // Ensure ball stays at a fixed y-coordinate
-
-        ballPosition.y = 1.0f;
 
         // Render commands here
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
@@ -581,7 +574,32 @@ int main() {
     glDeleteBuffers(1, &planeVBO);
     glDeleteProgram(shaderProgram);
     glDeleteBuffers(1, &ballEBO);
+    // Cleanup Bullet Physics objects
+    for (int i = 0; i < numCuboids; ++i) {
+        dynamicsWorld->removeRigidBody(cuboidRigidBodies[i]);
+        delete cuboidRigidBodies[i]->getMotionState();
+        delete cuboidRigidBodies[i];
+        delete cuboidShapes[i];
+    }
+    dynamicsWorld->removeRigidBody(ballRigidBody);
+    delete ballRigidBody->getMotionState();
+    delete ballRigidBody;
+    delete ballShape;
+    delete dynamicsWorld;
+    delete solver;
+    delete overlappingPairCache;
+    delete dispatcher;
+    delete collisionConfiguration;
+    /*delete planeRigidBody->getMotionState();
+    delete planeRigidBody;
+    delete planeShape;*/
 
+    for (int i = 0; i < numCuboids; ++i) {
+        dynamicsWorld->removeRigidBody(cuboidRigidBodies[i]);
+        delete cuboidRigidBodies[i]->getMotionState();
+        delete cuboidRigidBodies[i];
+        delete cuboidShapes[i];
+    }
 
     // Terminate GLFW
     glfwTerminate();
@@ -595,7 +613,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 }
 
 void processInput(GLFWwindow* window) {
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)  {
         glfwSetWindowShouldClose(window, true);
     }
 }
