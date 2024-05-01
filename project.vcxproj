@@ -87,8 +87,12 @@
     <LibraryPath>C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\GLEW\lib;C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\GLEW\include\GL;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <LibraryPath>C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\BULLET PHYSICS\lib;C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\GLFW\lib-vc2022;$(LibraryPath)</LibraryPath>
-    <IncludePath>C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\BULLET PHYSICS\include;C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\LEARNOPENGL\include;C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\STB_IMAGE\include;C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\GLM\include;C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\GLFW\include;C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\GLAD\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\GLEW\lib;C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\FREETYPE\lib;C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\BULLET PHYSICS\lib;C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\GLFW\lib-vc2022;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\FREETYPE\include;C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\GLUT\include;C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\GLM\include;C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\GLFW\include;C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\GLEW\include;C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\GLAD\include;C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\BULLET PHYSICS\include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <IncludePath>C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\GLUT\include;C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\GLM\include;C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\GLAD\include;C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\BULLET PHYSICS\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\GLUT\lib;C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\BULLET PHYSICS\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -147,7 +151,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\BULLET PHYSICS\include;C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\GLFW\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\GLUT\include;C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\BULLET PHYSICS\include;C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\GLFW\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -155,7 +159,10 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>glfw3.lib;opengl32.lib;BulletDynamics.lib;BulletCollision.lib;LinearMath.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glfw3.lib;opengl32.lib;BulletDynamics.lib;BulletCollision.lib;LinearMath.lib;freeglut.lib;glew32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\GLUT\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <EntryPointSymbol>
+      </EntryPointSymbol>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -1,0 +1,35 @@
+﻿  design.cpp
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.22621.0\shared\minwindef.h(130,1): warning C4005: 'APIENTRY': macro redefinition
+  (compiling source file 'src/design.cpp')
+  C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\GLAD\include\glad\glad.h(32,1):
+  see previous definition of 'APIENTRY'
+  
+C:\Users\alext\source\repos\brick-breaker-0.1\src\design.cpp(474,45): warning C4305: 'argument': truncation from 'double' to 'const btScalar'
+design.obj : error LNK2001: unresolved external symbol "public: void __thiscall btCollisionWorld::contactPairTest(class btCollisionObject *,class btCollisionObject *,struct btCollisionWorld::ContactResultCallback &)" (?contactPairTest@btCollisionWorld@@QAEXPAVbtCollisionObject@@0AAUContactResultCallback@1@@Z)
+design.obj : error LNK2001: unresolved external symbol "public: __thiscall btDefaultCollisionConfiguration::btDefaultCollisionConfiguration(struct btDefaultCollisionConstructionInfo const &)" (??0btDefaultCollisionConfiguration@@QAE@ABUbtDefaultCollisionConstructionInfo@@@Z)
+design.obj : error LNK2001: unresolved external symbol "public: virtual void __thiscall btCollisionShape::serializeSingleShape(class btSerializer *)const " (?serializeSingleShape@btCollisionShape@@UBEXPAVbtSerializer@@@Z)
+design.obj : error LNK2001: unresolved external symbol "public: virtual char const * __thiscall btCollisionShape::serialize(void *,class btSerializer *)const " (?serialize@btCollisionShape@@UBEPBDPAXPAVbtSerializer@@@Z)
+design.obj : error LNK2001: unresolved external symbol "public: virtual float __thiscall btCollisionShape::getContactBreakingThreshold(float)const " (?getContactBreakingThreshold@btCollisionShape@@UBEMM@Z)
+design.obj : error LNK2001: unresolved external symbol "public: virtual float __thiscall btCollisionShape::getAngularMotionDisc(void)const " (?getAngularMotionDisc@btCollisionShape@@UBEMXZ)
+design.obj : error LNK2001: unresolved external symbol "public: virtual void __thiscall btCollisionShape::getBoundingSphere(class btVector3 &,float &)const " (?getBoundingSphere@btCollisionShape@@UBEXAAVbtVector3@@AAM@Z)
+design.obj : error LNK2001: unresolved external symbol "public: __thiscall btDbvtBroadphase::btDbvtBroadphase(class btOverlappingPairCache *)" (??0btDbvtBroadphase@@QAE@PAVbtOverlappingPairCache@@@Z)
+design.obj : error LNK2001: unresolved external symbol "public: __thiscall btDiscreteDynamicsWorld::btDiscreteDynamicsWorld(class btDispatcher *,class btBroadphaseInterface *,class btConstraintSolver *,class btCollisionConfiguration *)" (??0btDiscreteDynamicsWorld@@QAE@PAVbtDispatcher@@PAVbtBroadphaseInterface@@PAVbtConstraintSolver@@PAVbtCollisionConfiguration@@@Z)
+design.obj : error LNK2001: unresolved external symbol "public: __thiscall btRigidBody::btRigidBody(struct btRigidBody::btRigidBodyConstructionInfo const &)" (??0btRigidBody@@QAE@ABUbtRigidBodyConstructionInfo@0@@Z)
+design.obj : error LNK2001: unresolved external symbol "void __cdecl btAlignedFreeInternal(void *)" (?btAlignedFreeInternal@@YAXPAX@Z)
+design.obj : error LNK2001: unresolved external symbol "public: __thiscall btBoxShape::btBoxShape(class btVector3 const &)" (??0btBoxShape@@QAE@ABVbtVector3@@@Z)
+design.obj : error LNK2001: unresolved external symbol "public: virtual void __thiscall btSphereShape::getAabb(class btTransform const &,class btVector3 &,class btVector3 &)const " (?getAabb@btSphereShape@@UBEXABVbtTransform@@AAVbtVector3@@1@Z)
+design.obj : error LNK2001: unresolved external symbol "public: virtual void __thiscall btSphereShape::calculateLocalInertia(float,class btVector3 &)const " (?calculateLocalInertia@btSphereShape@@UBEXMAAVbtVector3@@@Z)
+design.obj : error LNK2001: unresolved external symbol "public: virtual void __thiscall btSphereShape::batchedUnitVectorGetSupportingVertexWithoutMargin(class btVector3 const *,class btVector3 *,int)const " (?batchedUnitVectorGetSupportingVertexWithoutMargin@btSphereShape@@UBEXPBVbtVector3@@PAV2@H@Z)
+design.obj : error LNK2001: unresolved external symbol "public: virtual class btVector3 __thiscall btSphereShape::localGetSupportingVertexWithoutMargin(class btVector3 const &)const " (?localGetSupportingVertexWithoutMargin@btSphereShape@@UBE?AVbtVector3@@ABV2@@Z)
+design.obj : error LNK2001: unresolved external symbol "public: virtual class btVector3 __thiscall btSphereShape::localGetSupportingVertex(class btVector3 const &)const " (?localGetSupportingVertex@btSphereShape@@UBE?AVbtVector3@@ABV2@@Z)
+design.obj : error LNK2001: unresolved external symbol "public: __thiscall btStaticPlaneShape::btStaticPlaneShape(class btVector3 const &,float)" (??0btStaticPlaneShape@@QAE@ABVbtVector3@@M@Z)
+design.obj : error LNK2001: unresolved external symbol "public: virtual void __thiscall btConvexInternalShape::setLocalScaling(class btVector3 const &)" (?setLocalScaling@btConvexInternalShape@@UAEXABVbtVector3@@@Z)
+design.obj : error LNK2001: unresolved external symbol "public: virtual void __thiscall btConvexInternalShape::getAabbSlow(class btTransform const &,class btVector3 &,class btVector3 &)const " (?getAabbSlow@btConvexInternalShape@@UBEXABVbtTransform@@AAVbtVector3@@1@Z)
+design.obj : error LNK2001: unresolved external symbol "public: virtual class btVector3 __thiscall btConvexInternalShape::localGetSupportingVertex(class btVector3 const &)const " (?localGetSupportingVertex@btConvexInternalShape@@UBE?AVbtVector3@@ABV2@@Z)
+design.obj : error LNK2001: unresolved external symbol "protected: __thiscall btConvexInternalShape::btConvexInternalShape(void)" (??0btConvexInternalShape@@IAE@XZ)
+design.obj : error LNK2001: unresolved external symbol "public: virtual void __thiscall btConvexShape::project(class btTransform const &,class btVector3 const &,float &,float &,class btVector3 &,class btVector3 &)const " (?project@btConvexShape@@UBEXABVbtTransform@@ABVbtVector3@@AAM2AAV3@3@Z)
+design.obj : error LNK2001: unresolved external symbol "public: virtual __thiscall btConvexShape::~btConvexShape(void)" (??1btConvexShape@@UAE@XZ)
+design.obj : error LNK2001: unresolved external symbol "void * __cdecl btAlignedAllocInternal(unsigned int,int)" (?btAlignedAllocInternal@@YAPAXIH@Z)
+design.obj : error LNK2001: unresolved external symbol "public: __thiscall btSequentialImpulseConstraintSolver::btSequentialImpulseConstraintSolver(void)" (??0btSequentialImpulseConstraintSolver@@QAE@XZ)
+design.obj : error LNK2001: unresolved external symbol "public: __thiscall btCollisionDispatcher::btCollisionDispatcher(class btCollisionConfiguration *)" (??0btCollisionDispatcher@@QAE@PAVbtCollisionConfiguration@@@Z)
+C:\Users\alext\source\repos\brick-breaker-0.1\Release\project.exe : fatal error LNK1120: 27 unresolved externals

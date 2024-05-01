@@ -11,11 +11,11 @@
 
 #include <btBulletDynamicsCommon.h>
 
-float cuboidMoveSpeed = 0.1f;
+float cuboidMoveSpeed = 0.2f;
 glm::vec3 cuboidMoveDirection(0.0f, 0.0f, 0.0f);
 int selectedCuboidIndex = 0;
-float cuboidMinX = -5.0f;
-float cuboidMaxX = 5.0f;
+float cuboidMinX = -7.0f;
+float cuboidMaxX = 7.0f;
 
 const unsigned int SCREEN_WIDTH = 800;
 const unsigned int SCREEN_HEIGHT = 600;
@@ -78,6 +78,22 @@ void main() {
     FragColor = vec4(result, 1.0);
 }
 )glsl";
+
+class MyContactResultCallback : public btCollisionWorld::ContactResultCallback {
+public:
+    bool hasContact() const { return m_collisionDetected; }
+    const btVector3& getCollisionNormal() const { return m_collisionNormal; }
+
+    btScalar addSingleResult(btManifoldPoint& cp, const btCollisionObjectWrapper* colObj0Wrap, int partId0, int index0, const btCollisionObjectWrapper* colObj1Wrap, int partId1, int index1) override {
+        m_collisionDetected = true;
+        m_collisionNormal = cp.m_normalWorldOnB;
+        return 0;
+    }
+
+private:
+    bool m_collisionDetected = false;
+    btVector3 m_collisionNormal;
+};
 
 // Helper function to add vertex data to the vertices array
 void addVertexData(float* vertices, int& index, float x, float y, float z, float nx, float ny, float nz, float tx, float ty) {
@@ -198,7 +214,7 @@ glm::vec3 ballInitialVelocity = glm::vec3(0.0f, 0.0f, -10.0f);
 glm::vec3 ballInitialPosition = glm::vec3(4.0f, 0.0f,9.0f);
 glm::vec3 ballVelocity = ballInitialVelocity;
 glm::vec3 ballPosition = ballInitialPosition; // Initial velocity
-float ballRadius = 0.5f;
+float ballRadius = 0.2f;
 int sphereSegments = 40; // Increase segments and rings for a smoother sphere
 int sphereRings = 40;
 
@@ -245,14 +261,13 @@ int main() {
 
     float planeVertices[] = {
         // Positions          // Normals           // Texture Coords
-        -10.0f, 0.0f, -10.0f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f,
-         10.0f, 0.0f, -10.0f,  0.0f,  1.0f,  0.0f,  10.0f,  0.0f,
-         10.0f, 0.0f,  10.0f,  0.0f,  1.0f,  0.0f,  10.0f,  10.0f,
-         10.0f, 0.0f,  10.0f,  0.0f,  1.0f,  0.0f,  10.0f,  10.0f,
-        -10.0f, 0.0f,  10.0f,  0.0f,  1.0f,  0.0f,  0.0f,  10.0f,
-        -10.0f, 0.0f, -10.0f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f
+        -10.0f, 0.0f, -15.0f,  0.0f,  1.0f,  0.0f,  0.0f,   0.0f,
+         10.0f, 0.0f, -15.0f,  0.0f,  1.0f,  0.0f,  10.0f,  0.0f,
+         10.0f, 0.0f,  15.0f,  0.0f,  1.0f,  0.0f,  10.0f,  15.0f,
+         10.0f, 0.0f,  15.0f,  0.0f,  1.0f,  0.0f,  10.0f,  15.0f,
+        -10.0f, 0.0f,  15.0f,  0.0f,  1.0f,  0.0f,  0.0f,   15.0f,
+        -10.0f, 0.0f, -15.0f,  0.0f,  1.0f,  0.0f,  0.0f,   0.0f
     };
-
 
 
 
@@ -276,74 +291,64 @@ int main() {
   
    
     // Brick configuration
-    const int numBrickRows = 4;
-    const int numBrickCols = 8;
-    const float brickWidth =0.5f;
-    const float brickHeight = 1.5f;
+    const int numBrickRows = 12;
+    const int numBrickCols = 10;
+    const float brickWidth = 1.5f;
+    const float brickHeight = 0.5f;
     const float brickDepth = 1.0f;
-    const float brickSpacing = 0.05f;
+    const float brickSpacing = 0.1f;
 
     // Calculate the total number of cuboids (including bricks)
-    const int numNonBrick =5;
+    const int numNonBrick = 5;
     int brickIndex = numNonBrick;
-    //const int numCuboids = numNonBrick + numBrickRows * numBrickCols;
-    const int numCuboids = numNonBrick;
+    const int numCuboids = numNonBrick + numBrickRows * numBrickCols;
     float positions[numCuboids][3] = {
-        {0.0f, 0.0f, 7.0f},
-        {0.0f, 0.0f, -10.0f},
-        {-10.0f,  0.0f, 0.0f},
-        {10.0f,  0.0f,  0.0f},
-           {0.0f, 0.0f, 10.0f}
-   
-        
+        {0.0f, 0.0f, 13.0f},
+        {0.0f, 0.0f, -15.0f},
+        {-10.0f, 0.0f, 0.0f},
+        {10.0f, 0.0f, 0.0f},
+        {0.0f, 0.0f, 15.0f}
         // The remaining positions will be filled with brick positions
     };
 
     float colors[numCuboids][3] = {
         {1.0f, 1.0f, 0.0f},
-        {1.0f, 1.0f, 0.0f}, // Yellow
-        {1.0f, 1.0f, 0.0f}, // Yellow
-        {1.0f, 1.0f, 0.0f}, // Yellow
-         {1.0f, 1.0f, 0.0f}, // Yellow
-      
+        {1.0f, 1.0f, 0.0f},
+        {1.0f, 1.0f, 0.0f},
+        {1.0f, 1.0f, 0.0f},
+        {1.0f, 1.0f, 0.0f}
         // The remaining colors will be filled with brick colors
     };
 
     float dimensions[numCuboids][3] = {
         {4.0f, 1.0f, 1.0f},
-        {20.0f, 1.0f, 1.0f}, // Dimensions for cuboid 0 (length, height, width)
-        {1.0f, 1.0f, 20.0f}, // Dimensions for cuboid 1 (length, height, width)
-        {1.0f, 1.0f, 20.0f}, // Dimensions for cuboid 2 (length, height, width)
+        {20.0f, 1.0f, 1.0f},
+        {1.0f, 1.0f, 30.0f},
+        {1.0f, 1.0f, 30.0f},
         {20.0f, 1.0f, 1.0f}
-       
         // The remaining dimensions will be filled with brick dimensions
     };
 
-   
-
     // Calculate the starting position of the brick wall
-    const float brickStartX = -3.3f;
-    const float brickEndX = 3.3f;
-
-    const float brickStartY = 0.0f; // Adjust the y-coordinate to match the plane level
-    const float brickStartZ = -3.5f;
+    const float brickStartX = -7.0f;
+    const float brickEndX = 7.0f;
+    const float brickStartY = 0.0f;
+    const float brickStartZ = -10.0f;
     const float totalBrickWidth = brickEndX - brickStartX;
-    // Generate brick positions, colors, and dimensions
-     // Start index for bricks in the arrays
+    const float totalBrickDepth = numBrickRows * (brickDepth + brickSpacing);
 
-
-    /*for (int row = 0; row < numBrickRows; ++row) {
+    for (int row = 0; row < numBrickRows; ++row) {
         for (int col = 0; col < numBrickCols; ++col) {
-            float brickX = brickStartX + (col * totalBrickWidth) / (numBrickCols - 1);
-            float brickY = brickStartY + 0.5;
+            float brickX = brickStartX + col * (brickWidth + brickSpacing);
+            float brickY = brickStartY + brickHeight / 2.0f;
             float brickZ = brickStartZ + row * (brickDepth + brickSpacing);
 
             positions[brickIndex][0] = brickX;
             positions[brickIndex][1] = brickY;
             positions[brickIndex][2] = brickZ;
 
-            colors[brickIndex][0] = 1.0f;
-            colors[brickIndex][1] = 0.0f;
+            colors[brickIndex][0] = 0.0f;
+            colors[brickIndex][1] = 1.0f;
             colors[brickIndex][2] = 0.0f;
 
             dimensions[brickIndex][0] = brickWidth;
@@ -352,9 +357,12 @@ int main() {
 
             ++brickIndex;
         }
-    }*/
+    }
 
-    // Vertex Buffer Object and Vertex Array Object for the cuboids
+    bool isBrick[numCuboids] = { false };
+    for (int i = numNonBrick; i < numCuboids; ++i) {
+        isBrick[i] = true;
+    }
     
 
     std::vector<btCollisionShape*> cuboidShapes(numCuboids);
@@ -522,6 +530,49 @@ int main() {
         // Update ball position and velocity using Bullet Physics simulation
         dynamicsWorld->stepSimulation(deltaTime, 10);
 
+        // In the main loop, after the physics simulation step
+        for (int i = 0; i < numCuboids; ++i) {
+            if (isBrick[i] && cuboidRigidBodies[i] != nullptr) {
+                MyContactResultCallback callback;
+                dynamicsWorld->contactPairTest(ballRigidBody, cuboidRigidBodies[i], callback);
+
+                if (callback.hasContact()) {
+                    // Get the collision normal from the callback
+                    btVector3 collisionNormal = callback.getCollisionNormal();
+
+                    // Get the ball's current velocity
+                    btVector3 ballVelocity = ballRigidBody->getLinearVelocity();
+
+                    // Calculate the reflection direction using the formula: R = V - 2(V · N)N
+                    btVector3 reflectedVelocity = ballVelocity - 2.0f * ballVelocity.dot(collisionNormal) * collisionNormal;
+
+                    // Update the ball's velocity with the reflected direction
+                    ballRigidBody->setLinearVelocity(reflectedVelocity);
+
+                    // Remove the cuboid from the dynamics world
+                    dynamicsWorld->removeRigidBody(cuboidRigidBodies[i]);
+
+                    // Delete the cuboid's collision shape, rigid body, and motion state
+                    delete cuboidRigidBodies[i]->getMotionState();
+                    delete cuboidRigidBodies[i];
+                    delete cuboidShapes[i];
+
+                    // Remove the cuboid's VAO, VBO, and EBO
+                    glDeleteVertexArrays(1, &cuboidVAOs[i]);
+                    glDeleteBuffers(1, &cuboidVBOs[i]);
+                    glDeleteBuffers(1, &cuboidEBOs[i]);
+
+                    // Mark the cuboid as deleted
+                    isBrick[i] = false;
+
+                    // Set the corresponding rigid body and collision shape pointers to nullptr
+                    cuboidRigidBodies[i] = nullptr;
+                    cuboidShapes[i] = nullptr;
+                }
+            }
+        }
+
+
         // Get the ball's current velocity
         btVector3 currentVelocity = ballRigidBody->getLinearVelocity();
 
@@ -529,7 +580,7 @@ int main() {
         btScalar speed = currentVelocity.length();
 
         // Define the desired constant speed
-        btScalar constantSpeed = 10.0f; // Adjust the value as needed
+        btScalar constantSpeed = 20.0f; // Adjust the value as needed
 
         // Check if the current speed is not zero to avoid division by zero
         if (speed != 0.0f) {
@@ -570,10 +621,9 @@ int main() {
 
         model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(0.5f, 1.0f, 0.0f));
 
-        // Define camera position and orientation
-        glm::vec3 cameraPos = glm::vec3(17.0f, 6.0f, 17.0f);     // Camera position at the corner of the plane
-        glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);  // Looking at the origin
-        glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);      // Up vector is the positive y-axis
+        glm::vec3 cameraPos = glm::vec3(3.0f, 15.0f, 25.0f);
+        glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
+        glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 
         // Create the view matrix using glm::lookAt
         view = glm::lookAt(cameraPos, cameraTarget, cameraUp);
@@ -634,8 +684,14 @@ int main() {
         cuboidRigidBodies[selectedCuboidIndex]->setWorldTransform(cuboidTransform);
         cuboidRigidBodies[selectedCuboidIndex]->getMotionState()->setWorldTransform(cuboidTransform);
 
+
         // Render the cuboids
         for (int i = 0; i < numCuboids; ++i) {
+            // Skip rendering deleted cuboids
+            if (cuboidRigidBodies[i] == nullptr) {
+                continue;
+            }
+
             btTransform cuboidTransform;
             cuboidRigidBodies[i]->getMotionState()->getWorldTransform(cuboidTransform);
             glm::vec3 cuboidPosition = glm::vec3(cuboidTransform.getOrigin().getX(), cuboidTransform.getOrigin().getY(), cuboidTransform.getOrigin().getZ());
