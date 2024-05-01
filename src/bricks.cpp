@@ -21,7 +21,7 @@ bool showInitialText = true;
 const int WALL_THICKNESS = 20;  // Thickness of the side walls
 const int TOP_WALL_HEIGHT = 20;  // Height of the top wall
 const float WALL_COLOR[3] = { 0.7f, 0.7f, 0.7f };  // Color for all walls
-const float WALL_HEIGHT = WINDOW_HEIGHT - 60.0;
+const float WALL_HEIGHT = WINDOW_HEIGHT - 50.0;
 
 const int TOP_WALL_BOUNDARY = 40 + TOP_WALL_HEIGHT; // 40 is the starting point (0, 40)
 const int LEFT_WALL_BOUNDARY = WALL_THICKNESS;
@@ -326,9 +326,11 @@ void printPowerUpStatus() {
 void drawWalls() {
     // Draw the left wall
     drawRectangle(0.0f, 40.0f, WALL_THICKNESS, WALL_HEIGHT, WALL_COLOR, false);
+    drawRectangle(0.0f, 670.0f, WALL_THICKNESS, 800, WALL_COLOR, false);
 
     // Draw the right wall
     drawRectangle(WINDOW_WIDTH - WALL_THICKNESS, 40.0f, WINDOW_WIDTH, WALL_HEIGHT, WALL_COLOR, false);
+    drawRectangle(WINDOW_WIDTH - WALL_THICKNESS, 670.0f, WINDOW_WIDTH, 800, WALL_COLOR, false);
 
     // Draw the top wall
     drawRectangle(0.0f, 40.0f, WINDOW_WIDTH, 40 + TOP_WALL_HEIGHT, WALL_COLOR, false);
