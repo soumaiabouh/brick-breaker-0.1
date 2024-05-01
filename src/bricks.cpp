@@ -61,7 +61,9 @@ int paddleRightWidth = paddleLeftWidth;
 // Ball properties
 const float DX = 3.5f;      // X component of the velocity of the ball for the rest of the game when certain conditions are met
 const float DY = -3.5f;     // Y component of the velocity of the ball for the rest of the game when certain conditions are met
-float ballRadius = 5.0f;   // Visible size
+const float ballRadius = 5.0f;   
+const float ballContourThickness = 3.0f; 
+float updatedBallRadius = ballRadius + ballContourThickness;
 float ballX = WINDOW_WIDTH / 2;   // Start in the middle of the screen horizontally
 float ballY = WINDOW_HEIGHT / 2;  // Start in the middle of the screen vertically
 float ballDX = 0.0f;       // Initial horizontal velocity
@@ -738,9 +740,7 @@ void drawBall() {
     // White color for the ball
     GLfloat ballColor[] = { 1.0f, 1.0f, 1.0f };
     // Black color for the contour
-    GLfloat contourColor[] = { 0.0f, 0.0f, 0.0f };
-    // Contour size:
-    const float contourThickness = 3.0f; // Adjust this value to change the thickness
+    GLfloat contourColor[] = { 0.0f, 0.0f, 0.0f };    
 
     // Generate vertices for the inner circle (ball)
     std::vector<float> ballVertices;
@@ -780,7 +780,7 @@ void drawBall() {
     glBindVertexArray(0);
 
     // Generate vertices for the outer circles (contour)
-    for (float thickness = 1.0f; thickness <= contourThickness; thickness++) {
+    for (float thickness = 1.0f; thickness <= ballContourThickness; thickness++) {
         std::vector<float> contourVertices;
         float contourRadius = ballRadius + thickness;
         for (int angle = 0; angle <= 360; angle++) {
@@ -823,15 +823,15 @@ void drawBall() {
 
 int checkWallCollision(int x, int y) {
     // Check for wall collisions considering the radius of the ball
-    if (((x - ballRadius <= LEFT_WALL_BOUNDARY && y - ballRadius > TOP_WALL_BOUNDARY) ||
-        (x + ballRadius >= RIGHT_WALL_BOUNDARY && y - ballRadius > TOP_WALL_BOUNDARY))) {
+    if (((x - updatedBallRadius <= LEFT_WALL_BOUNDARY && y - updatedBallRadius > TOP_WALL_BOUNDARY) ||
+        (x + updatedBallRadius >= RIGHT_WALL_BOUNDARY && y - updatedBallRadius > TOP_WALL_BOUNDARY))) {
         return 1; // Ball is next to the left or right wall but not at the corner
     }
-    if (y - ballRadius <= TOP_WALL_BOUNDARY && x > LEFT_WALL_BOUNDARY && x < RIGHT_WALL_BOUNDARY) {
+    if (y - updatedBallRadius <= TOP_WALL_BOUNDARY && x > LEFT_WALL_BOUNDARY && x < RIGHT_WALL_BOUNDARY) {
         return 2; // Ball is next to the top wall but not at the corners
     }
-    if ((x - ballRadius <= LEFT_WALL_BOUNDARY || x + ballRadius >= RIGHT_WALL_BOUNDARY) &&
-        y - ballRadius <= TOP_WALL_BOUNDARY) {
+    if ((x - updatedBallRadius <= LEFT_WALL_BOUNDARY || x + updatedBallRadius >= RIGHT_WALL_BOUNDARY) &&
+        y - updatedBallRadius <= TOP_WALL_BOUNDARY) {
         return 3; // Ball is at a corner
     }
     return 0; // No collision
@@ -839,17 +839,17 @@ int checkWallCollision(int x, int y) {
 
 int checkPaddleCollision() {
 
-    if (ballY + ballRadius >= paddleY && ballY + ballRadius <= paddleY + PADDLE_HEIGHT) {
+    if (ballY + updatedBallRadius >= paddleY && ballY + updatedBallRadius <= paddleY + PADDLE_HEIGHT) {
         int left_section_end = paddleX + paddleLeftWidth;
         int middle_section_end = left_section_end + paddleMiddleWidth;
 
-        if (ballX + ballRadius >= paddleX && ballX < left_section_end) {
+        if (ballX + updatedBallRadius >= paddleX && ballX < left_section_end) {
             return 1;  // Ball is above the left section
         }
         else if (ballX >= left_section_end && ballX < middle_section_end) {
             return 2;  // Ball is above the middle section
         }
-        else if (ballX >= middle_section_end && ballX - ballRadius < paddleX + paddleLength) {
+        else if (ballX >= middle_section_end && ballX - updatedBallRadius < paddleX + paddleLength) {
             return 3;  // Ball is above the right section
         }
     }
@@ -866,8 +866,8 @@ int checkBrickCollision(float& ball_x, float& ball_y, float& ball_dx, float& bal
             float brick_bottom = brick_top + BRICK_HEIGHT;
 
             // Check collision with the ball
-            if (ball_x + ballRadius > brick_left && ball_x - ballRadius < brick_right &&
-                ball_y + ballRadius > brick_top && ball_y - ballRadius < brick_bottom) {
+            if (ball_x + updatedBallRadius > brick_left && ball_x - updatedBallRadius < brick_right &&
+                ball_y + updatedBallRadius > brick_top && ball_y - updatedBallRadius < brick_bottom) {
                 // Determine points by row
                 int row = i / BRICK_COLS;
                 if (row < 2) gameScore += 5;       // Top two rows
@@ -877,8 +877,8 @@ int checkBrickCollision(float& ball_x, float& ball_y, float& ball_dx, float& bal
                 brickActive[i] = false;  // Remove the brick
 
                 // Determine side of collision
-                bool hit_vertical = ((ball_x + ballRadius) > brick_left && (ball_x - ballRadius) < brick_right);
-                bool hit_horizontal = ((ball_y + ballRadius) > brick_top && (ball_y - ballRadius) < brick_bottom);
+                bool hit_vertical = ((ball_x + updatedBallRadius) > brick_left && (ball_x - updatedBallRadius) < brick_right);
+                bool hit_horizontal = ((ball_y + updatedBallRadius) > brick_top && (ball_y - updatedBallRadius) < brick_bottom);
 
                 if (hit_vertical && !hit_horizontal) {
                     collision_type = std::max(collision_type, 1); // Side
