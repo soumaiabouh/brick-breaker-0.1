@@ -978,13 +978,11 @@ void updateBall() {
 // 3.3 Laser
 void drawLaser() {
     if (laserActive) {
-        glColor3f(1.0f, 0.0f, 0.0f); // Red color for the laser
-        glBegin(GL_QUADS);
-        glVertex2f(laserX - 1, laserY);
-        glVertex2f(laserX + 1, laserY);
-        glVertex2f(laserX + 1, laserY - 10);
-        glVertex2f(laserX - 1, laserY - 10);
-        glEnd();
+        // Red color for the laser
+        GLfloat laserColor[] = { 1.0f, 0.0f, 1.0f };
+
+        // Draw the laser using the defined color
+        drawRectangle(laserX - 1, laserY, laserX + 1, laserY - 10, laserColor, false);
     }
 }
 
