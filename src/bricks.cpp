@@ -14,6 +14,9 @@ std::string STUDENT_ID = "261053234"; //TODO: rename based on who's submitting i
 int gameScore = 0;
 int livesLeft = 3;
 
+// Flag to determine if the initial text should be displayed
+bool showInitialText = true;
+
 // Wall dimensions
 const int WALL_THICKNESS = 20;  // Thickness of the side walls
 const int TOP_WALL_HEIGHT = 20;  // Height of the top wall
@@ -165,7 +168,7 @@ void decreaseLives() {
     livesLeft--;
 }
 
-void renderBitmapString(float x, float y, void* font, const char* string) {
+void renderText(float x, float y, void* font, const char* string) {
     const char* c;
     glRasterPos2f(x, y);
     for (c = string; *c != '\0'; c++) {
@@ -265,9 +268,9 @@ void printText() {
 
     // Calculate the position based on the width of the screen. Center them
     glColor3f(1.0f, 1.0f, 1.0f);
-    renderBitmapString(score_x, 30.0f, GLUT_BITMAP_HELVETICA_18, score_to_print);
-    renderBitmapString(lives_x, 30.0f, GLUT_BITMAP_HELVETICA_18, lives_to_print);
-    renderBitmapString(student_id_x, 30.0f, GLUT_BITMAP_HELVETICA_18, student_id);
+    renderText(score_x, 30.0f, GLUT_BITMAP_HELVETICA_18, score_to_print);
+    renderText(lives_x, 30.0f, GLUT_BITMAP_HELVETICA_18, lives_to_print);
+    renderText(student_id_x, 30.0f, GLUT_BITMAP_HELVETICA_18, student_id);
 }
 
 void printGameOverText() {
@@ -277,7 +280,7 @@ void printGameOverText() {
     float text_x = (WINDOW_WIDTH - text_width) / 2; // Center the text horizontally
     float text_y = WINDOW_HEIGHT / 2; // Position the text vertically in the middle
     glColor3f(1.0f, 0.25f, 0.25f); // Red color for the game over text
-    renderBitmapString(text_x, text_y, GLUT_BITMAP_HELVETICA_18, game_over_text);
+    renderText(text_x, text_y, GLUT_BITMAP_HELVETICA_18, game_over_text);
 }
 
 void printGameOverOptions() {
@@ -286,7 +289,7 @@ void printGameOverOptions() {
     float options_x = (WINDOW_WIDTH - options_width) / 2;
     float options_y = WINDOW_HEIGHT / 2 + 50; // Below the game over text
     glColor3f(1.0f, 1.0f, 1.0f); // White color for the text
-    renderBitmapString(options_x, options_y, GLUT_BITMAP_9_BY_15, game_over_options);
+    renderText(options_x, options_y, GLUT_BITMAP_9_BY_15, game_over_options);
 }
 
 void printPressKeyToContinue() {
@@ -295,7 +298,7 @@ void printPressKeyToContinue() {
     float message_x = (WINDOW_WIDTH - message_width) / 2;
     float message_y = WINDOW_HEIGHT / 2 + 50; // Below the score or any other central message
     glColor3f(1.0f, 1.0f, 1.0f); // White color for the text
-    renderBitmapString(message_x, message_y, GLUT_BITMAP_9_BY_15, continue_message);
+    renderText(message_x, message_y, GLUT_BITMAP_9_BY_15, continue_message);
 }
 
 void printWinMessage() {
@@ -304,7 +307,7 @@ void printWinMessage() {
     float text_x = (WINDOW_WIDTH - text_width) / 2;
     float text_y = WINDOW_HEIGHT / 2 - 50; // Position it above the game over options
     glColor3f(0.0f, 1.0f, 0.0f);  // Green color for the win text
-    renderBitmapString(text_x, text_y, GLUT_BITMAP_HELVETICA_18, win_text);
+    renderText(text_x, text_y, GLUT_BITMAP_HELVETICA_18, win_text);
 }
 
 void printPowerUpStatus() {
@@ -314,7 +317,7 @@ void printPowerUpStatus() {
         float text_x = (WINDOW_WIDTH - text_width) / 2;
         float text_y = WINDOW_HEIGHT - 15; // Display at the bottom of the screen
         glColor3f(0.0f, 1.0f, 0.5f);
-        renderBitmapString(text_x, text_y, GLUT_BITMAP_9_BY_15, power_up_text.c_str());
+        renderText(text_x, text_y, GLUT_BITMAP_9_BY_15, power_up_text.c_str());
     }
 }
 
@@ -614,6 +617,12 @@ void keyboardHandler(unsigned char key, int x, int y) {
     if (gamePaused) {
         gamePaused = false; // Unpause the game on any key press
         lifeLost = false; // Reset life lost flag
+    }
+
+    // Toggle start page on any key press
+    if (showInitialText) {
+        showInitialText = false;
+        return;
     }
 
     switch (key) {
@@ -1112,7 +1121,6 @@ void updateGameLogic() {
 }
 
 void displayConstantText() {
-    // Ensure OpenGL is in a proper state to render text
     glUseProgram(0); // Disable custom shaders for text rendering
     glDisable(GL_DEPTH_TEST); // Disable depth testing
     glDisable(GL_TEXTURE_2D); // Disable texturing
@@ -1137,6 +1145,43 @@ void displayConstantText() {
     glPopMatrix();
 }
 
+void displayStartUpText() {
+    glUseProgram(0); // Disable custom shaders for text rendering
+    glDisable(GL_DEPTH_TEST); // Disable depth testing
+    glDisable(GL_TEXTURE_2D); // Disable texturing
+
+    // Setup orthographic projection for text rendering
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glLoadIdentity();
+    gluOrtho2D(0, WINDOW_WIDTH, WINDOW_HEIGHT, 0);
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glLoadIdentity();
+
+    // Render the "Brick Breaker" text
+    const char* message = "BRICK BREAKER";
+    float message_width = calculateStringWidth(GLUT_BITMAP_HELVETICA_18, message);
+    float message_x = (WINDOW_WIDTH - message_width) / 2;
+    float message_y = WINDOW_HEIGHT / 2;
+    glColor3f(0.7f, 0.7f, 1.0f); // White color for the text
+    renderText(message_x, message_y, GLUT_BITMAP_HELVETICA_18, message);
+
+    // Render the description text
+    const char* description = "Press any key to start!";
+    float description_width = calculateStringWidth(GLUT_BITMAP_8_BY_13, description);
+    float description_x = (WINDOW_WIDTH - description_width) / 2;
+    float description_y = (WINDOW_HEIGHT / 2) + 50.0f;
+    glColor3f(1.0f, 1.0f, 1.0f); // White color for the text
+    renderText(description_x, description_y, GLUT_BITMAP_8_BY_13, description);
+
+    // Restore matrices
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+    glMatrixMode(GL_MODELVIEW);
+    glPopMatrix();
+}
+
 // GLUT display callback function
 void display() {
     // Set dark gray background color
@@ -1144,21 +1189,25 @@ void display() {
 
     glClear(GL_COLOR_BUFFER_BIT); // Clear the screen
 
-    updateGameLogic();
+    if (showInitialText) {
+        displayStartUpText();
+    } else {
+        updateGameLogic();
 
-    // Static elements
-    drawWalls();
-    drawWallContours();
-    drawBricks();
-    drawBrickContours();
+        // Static elements
+        drawWalls();
+        drawWallContours();
+        drawBricks();
+        drawBrickContours();
 
-    // Dynamic elements
-    drawPaddle();
-    drawBall();
-    drawLaser();
+        // Dynamic elements
+        drawPaddle();
+        drawBall();
+        drawLaser();
 
-    // Text display
-    displayConstantText();
+        // Text display
+        displayConstantText();
+    }
 
     glutSwapBuffers(); // Swap the buffers to make it visible
     glUseProgram(0);
