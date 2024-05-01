@@ -96,6 +96,9 @@ float laserY = 0.0f;
 float laserDX = 0.0f;
 float laserDY = 1.0f;
 
+// Global variable to hold the shader program ID
+GLuint shaderProgram;  
+
 // 0. Helper functions
 // Function to draw a wall given bottom-left and top-right coordinates
 void drawRectangle(float x1, float y1, float x2, float y2) {
@@ -144,6 +147,46 @@ void reshape(int width, int height) {
         // Adjust the viewport
         glViewport(0, 0, width, height);
     }
+}
+
+// Function to compile shaders
+GLuint compileShader(const char* source, GLenum type) {
+    GLuint shader = glCreateShader(type);
+    glShaderSource(shader, 1, &source, NULL);
+    glCompileShader(shader);
+
+    int success;
+    char infoLog[512];
+    glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+    if (!success) {
+        glGetShaderInfoLog(shader, 512, NULL, infoLog);
+        std::cout << "ERROR::SHADER::COMPILATION_FAILED\n" << infoLog << std::endl;
+    }
+    return shader;
+}
+
+// Function to create shader program
+GLuint createShaderProgram(const char* vertexSource, const char* fragmentSource) {
+    GLuint vertexShader = compileShader(vertexSource, GL_VERTEX_SHADER);
+    GLuint fragmentShader = compileShader(fragmentSource, GL_FRAGMENT_SHADER);
+
+    GLuint shaderProgram = glCreateProgram();
+    glAttachShader(shaderProgram, vertexShader);
+    glAttachShader(shaderProgram, fragmentShader);
+    glLinkProgram(shaderProgram);
+
+    int success;
+    char infoLog[512];
+    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
+    if (!success) {
+        glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
+        std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
+    }
+
+    glDeleteShader(vertexShader);
+    glDeleteShader(fragmentShader);
+
+    return shaderProgram;
 }
 
 
@@ -751,6 +794,11 @@ void display() {
 
     updateGameLogic();
 
+    glUseProgram(shaderProgram);
+    glUniform1f(glGetUniformLocation(shaderProgram, "windowWidth"), static_cast<float>(WINDOW_WIDTH));
+    glUniform1f(glGetUniformLocation(shaderProgram, "windowHeight"), static_cast<float>(WINDOW_HEIGHT));
+    glUniform1f(glGetUniformLocation(shaderProgram, "screenWidth"), static_cast<float>(WINDOW_WIDTH));
+
     // Static elements
     drawWalls();
     drawBricks();
@@ -765,18 +813,56 @@ void display() {
     printPowerUpStatus();
 
     glutSwapBuffers(); // Swap the buffers to make it visible
+    glUseProgram(0);
 }
 
 // Initialize OpenGL Graphics
 void initOpenGL() {
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Clear the background to black
 
-    // Set up an orthographic projection
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    gluOrtho2D(0.0, WINDOW_WIDTH, WINDOW_HEIGHT, 0.0);
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
+    // Set up an orthographic projection using shaders
+    // Note: Normally, you'd pass projection matrices to the shaders, but
+    // for simplicity, we'll assume the shaders are taking care of positions directly.
+
+    // Initialize GLEW
+    GLenum err = glewInit();
+    if (GLEW_OK != err) {
+        fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
+        exit(EXIT_FAILURE);
+    }
+
+    // Shader sources
+    const char* vertexShaderSource = R"glsl(
+        #version 330 core
+        layout (location = 0) in vec2 aPos;
+        uniform float windowWidth;
+        uniform float windowHeight;
+
+        void main() {
+            // Transform from pixel coordinates to normalized device coordinates
+            float x = (aPos.x / windowWidth) * 2.0 - 1.0;
+            float y = (aPos.y / windowHeight) * 2.0 - 1.0;
+            gl_Position = vec4(x, -y, 0.0, 1.0); // Y is inverted as y increases downwards in pixel coords
+        }
+    )glsl";
+
+    const char* fragmentShaderSource = R"glsl(
+        #version 330 core
+        out vec4 FragColor;
+
+        uniform float xPos;
+        uniform float yPos;
+        uniform float screenWidth;
+
+        void main() {
+            float hueX = xPos / screenWidth;
+            float hueY = yPos / 100.0;
+            vec3 color = vec3(0.85 + 0.1 * hueX, 0.7 + 0.1 * hueY, 0.7);
+            FragColor = vec4(color, 1.0);
+        }
+    )glsl";
+
+    shaderProgram = createShaderProgram(vertexShaderSource, fragmentShaderSource);
 }
 
 
