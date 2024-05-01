@@ -20,7 +20,7 @@ bool showInitialText = true;
 // Wall dimensions
 const int WALL_THICKNESS = 20;  // Thickness of the side walls
 const int TOP_WALL_HEIGHT = 20;  // Height of the top wall
-const float WALL_COLOR[3] = { 0.5f, 0.5f, 0.5f };  // Color for all walls
+const float WALL_COLOR[3] = { 0.7f, 0.7f, 0.7f };  // Color for all walls
 const float WALL_HEIGHT = WINDOW_HEIGHT - 60.0;
 
 const int TOP_WALL_BOUNDARY = 40 + TOP_WALL_HEIGHT; // 40 is the starting point (0, 40)
@@ -386,10 +386,9 @@ void drawRectangleContour(float x1, float y1, float x2, float y2, const GLfloat*
 }
 
 void drawWallContours() {
-    // Black color for the contour
-    GLfloat contourColor[] = { 0.0f, 0.0f, 0.0f };
+    GLfloat contourColor[] = { 0.50f, 0.50f, 0.50f };
     // Contour thickness
-    const float contourThickness = 0.1f; // Adjust this value to change the thickness
+    const float contourThickness = 0.75f; // Adjust this value to change the thickness
 
     // Draw contours for the left wall
     drawRectangleContour(0.0f, 60.0f, WALL_THICKNESS, WALL_HEIGHT, contourColor, contourThickness);
@@ -1200,8 +1199,9 @@ void display() {
         updateGameLogic();
 
         // Static elements
-        drawWalls();
         drawWallContours();
+        drawWalls();
+        
         drawBricks();
         drawBrickContours();
 
