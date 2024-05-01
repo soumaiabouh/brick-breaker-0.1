@@ -390,20 +390,20 @@ void drawRectangleContour(float x1, float y1, float x2, float y2, const GLfloat*
 }
 
 void drawWallContours() {
-    GLfloat contourColor[] = { 0.50f, 0.50f, 0.50f };
+    GLfloat contourColor[] = { 0.0f, 0.0f, 0.0f };
     // Contour thickness
-    const float contourThickness = 0.75f; // Adjust this value to change the thickness
+    const float contourThickness = 2.75f; // Adjust this value to change the thickness
 
     // Draw contours for the left wall
-    drawRectangleContour(0.0f, 60.0f, WALL_THICKNESS, WALL_HEIGHT, contourColor, contourThickness);
-    drawRectangleContour(0.0f, 675.0f, WALL_THICKNESS, 800, contourColor, contourThickness);
+    drawRectangle(0.0f, 60.0f, WALL_THICKNESS + contourThickness, WALL_HEIGHT + contourThickness, contourColor, false);
+    drawRectangle(0.0f, 675.0f - contourThickness, WALL_THICKNESS + contourThickness, 800, contourColor, false);
 
     // Draw contours for the right wall
-    drawRectangleContour(WINDOW_WIDTH - WALL_THICKNESS, 60.0f, WINDOW_WIDTH, WALL_HEIGHT, contourColor, contourThickness);
-    drawRectangleContour(WINDOW_WIDTH - WALL_THICKNESS, 675.0f, WINDOW_WIDTH, 800, contourColor, contourThickness);
+    drawRectangle(WINDOW_WIDTH - WALL_THICKNESS - contourThickness, 60.0f, WINDOW_WIDTH + contourThickness, WALL_HEIGHT + contourThickness, contourColor, false);
+    drawRectangle(WINDOW_WIDTH - WALL_THICKNESS - contourThickness, 675.0f - contourThickness, WINDOW_WIDTH + contourThickness, 800, contourColor, false);
 
     // Draw contours for the top wall
-    drawRectangleContour(0.0f, 40.0f, WINDOW_WIDTH, 40 + TOP_WALL_HEIGHT, contourColor, contourThickness);
+    drawRectangle(0.0f, 40.0f - contourThickness, WINDOW_WIDTH, 40 + TOP_WALL_HEIGHT + contourThickness, contourColor, false);
 }
 
 // 2.2 BRICKS
@@ -737,88 +737,87 @@ void timer(int value) {
 
 //3.2 Ball
 void drawBall() {
-    // White color for the ball
-    GLfloat ballColor[] = { 1.0f, 1.0f, 1.0f };
-    // Black color for the contour
-    GLfloat contourColor[] = { 0.0f, 0.0f, 0.0f };    
+    // Black color for the background circle
+    GLfloat backgroundColor[] = { 0.0f, 0.0f, 0.0f };
+    // White color for the foreground circle
+    GLfloat foregroundColor[] = { 1.0f, 1.0f, 1.0f };
 
-    // Generate vertices for the inner circle (ball)
-    std::vector<float> ballVertices;
+    // Generate vertices for the background circle
+    std::vector<float> backgroundVertices;
     for (int angle = 0; angle <= 360; angle++) {
         float rad = angle * DEG2RAD; // Convert angle to radians
-        ballVertices.push_back(ballX + cos(rad) * ballRadius);
-        ballVertices.push_back(ballY + sin(rad) * ballRadius);
+        backgroundVertices.push_back(ballX + cos(rad) * updatedBallRadius);
+        backgroundVertices.push_back(ballY + sin(rad) * updatedBallRadius);
     }
 
-    // Generate VAO and VBO for ball
-    GLuint ballVAO, ballVBO;
-    glGenVertexArrays(1, &ballVAO);
-    glGenBuffers(1, &ballVBO);
+    // Generate VAO and VBO for background circle
+    GLuint backgroundVAO, backgroundVBO;
+    glGenVertexArrays(1, &backgroundVAO);
+    glGenBuffers(1, &backgroundVBO);
 
-    // Bind ball VAO and VBO
-    glBindVertexArray(ballVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, ballVBO);
+    // Bind background VAO and VBO
+    glBindVertexArray(backgroundVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, backgroundVBO);
 
-    // Load ball vertex data into VBO
-    glBufferData(GL_ARRAY_BUFFER, ballVertices.size() * sizeof(float), ballVertices.data(), GL_STATIC_DRAW);
+    // Load background vertex data into VBO
+    glBufferData(GL_ARRAY_BUFFER, backgroundVertices.size() * sizeof(float), backgroundVertices.data(), GL_STATIC_DRAW);
 
-    // Specify ball vertex attributes
+    // Specify background vertex attributes
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
     // Use shader program
     glUseProgram(shaderProgram);
 
-    // Set ball color uniform
-    glUniform3fv(glGetUniformLocation(shaderProgram, "uColor"), 1, ballColor);
+    // Set background color uniform
+    glUniform3fv(glGetUniformLocation(shaderProgram, "uColor"), 1, backgroundColor);
 
-    // Draw the ball
-    glDrawArrays(GL_TRIANGLE_FAN, 0, ballVertices.size() / 2);
+    // Draw the background circle
+    glDrawArrays(GL_TRIANGLE_FAN, 0, backgroundVertices.size() / 2);
 
-    // Cleanup ball VAO and VBO
+    // Cleanup background VAO and VBO
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 
-    // Generate vertices for the outer circles (contour)
-    for (float thickness = 1.0f; thickness <= ballContourThickness; thickness++) {
-        std::vector<float> contourVertices;
-        float contourRadius = ballRadius + thickness;
-        for (int angle = 0; angle <= 360; angle++) {
-            float rad = angle * DEG2RAD; // Convert angle to radians
-            contourVertices.push_back(ballX + cos(rad) * contourRadius);
-            contourVertices.push_back(ballY + sin(rad) * contourRadius);
-        }
-
-        // Generate VAO and VBO for contour
-        GLuint contourVAO, contourVBO;
-        glGenVertexArrays(1, &contourVAO);
-        glGenBuffers(1, &contourVBO);
-
-        // Bind contour VAO and VBO
-        glBindVertexArray(contourVAO);
-        glBindBuffer(GL_ARRAY_BUFFER, contourVBO);
-
-        // Load contour vertex data into VBO
-        glBufferData(GL_ARRAY_BUFFER, contourVertices.size() * sizeof(float), contourVertices.data(), GL_STATIC_DRAW);
-
-        // Specify contour vertex attributes
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
-        glEnableVertexAttribArray(0);
-
-        // Set contour color uniform
-        glUniform3fv(glGetUniformLocation(shaderProgram, "uColor"), 1, contourColor);
-
-        // Draw the contour
-        glDrawArrays(GL_LINE_LOOP, 0, contourVertices.size() / 2);
-
-        // Cleanup contour VAO and VBO
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        glBindVertexArray(0);
-
-        // Delete VAO and VBO
-        glDeleteVertexArrays(1, &contourVAO);
-        glDeleteBuffers(1, &contourVBO);
+    // Generate vertices for the foreground circle
+    std::vector<float> foregroundVertices;
+    for (int angle = 0; angle <= 360; angle++) {
+        float rad = angle * DEG2RAD; // Convert angle to radians
+        foregroundVertices.push_back(ballX + cos(rad) * ballRadius);
+        foregroundVertices.push_back(ballY + sin(rad) * ballRadius);
     }
+
+    // Generate VAO and VBO for foreground circle
+    GLuint foregroundVAO, foregroundVBO;
+    glGenVertexArrays(1, &foregroundVAO);
+    glGenBuffers(1, &foregroundVBO);
+
+    // Bind foreground VAO and VBO
+    glBindVertexArray(foregroundVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, foregroundVBO);
+
+    // Load foreground vertex data into VBO
+    glBufferData(GL_ARRAY_BUFFER, foregroundVertices.size() * sizeof(float), foregroundVertices.data(), GL_STATIC_DRAW);
+
+    // Specify foreground vertex attributes
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    // Set foreground color uniform
+    glUniform3fv(glGetUniformLocation(shaderProgram, "uColor"), 1, foregroundColor);
+
+    // Draw the foreground circle
+    glDrawArrays(GL_TRIANGLE_FAN, 0, foregroundVertices.size() / 2);
+
+    // Cleanup foreground VAO and VBO
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+
+    // Delete VAOs and VBOs
+    glDeleteVertexArrays(1, &backgroundVAO);
+    glDeleteBuffers(1, &backgroundVBO);
+    glDeleteVertexArrays(1, &foregroundVAO);
+    glDeleteBuffers(1, &foregroundVBO);
 }
 
 int checkWallCollision(int x, int y) {
