@@ -31,7 +31,6 @@ const float BRICK_HEIGHT = 20.0f;
 const float BRICK_SPACING = 2.0f;
 float brickWidth;  // To be calculated dynamically
 
-
 // Vectors to store brick properties
 std::vector<float> brickPositionsX;
 std::vector<float> brickPositionsY;
@@ -45,7 +44,6 @@ const float PADDLE_SPEED = 250.0f;  // Adjust this speed based on testing
 int paddleLength = PADDLE_LENGTH;  // Total length of the paddle
 int paddleX = (WINDOW_WIDTH - paddleLength) / 2;  // Starting x position
 int paddleY = 650;  // Vertical position
-
 
 // Colors for the paddle sections
 const GLfloat PADDLE_LEFT_COLOR[3] = { 0.7f, 0.2f, 0.2f };  // Color 2Ch approx
@@ -189,6 +187,30 @@ GLuint createShaderProgram(const char* vertexSource, const char* fragmentSource)
     return shaderProgram;
 }
 
+// For loading the textures:
+GLuint loadTextureAtlas(const char* fileName) {
+    int width, height, nrChannels;
+    stbi_set_flip_vertically_on_load(true); // Ensure texture is flipped correctly
+    unsigned char* data = stbi_load(fileName, &width, &height, &nrChannels, 0);
+    if (!data) {
+        std::cerr << "Failed to load texture" << std::endl;
+        return 0;
+    }
+
+    GLuint textureID;
+    glGenTextures(1, &textureID);
+    glBindTexture(GL_TEXTURE_2D, textureID);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    stbi_image_free(data);
+    return textureID;
+}
 
 // 1. TEXT
 // Function to render text using GLUT's bitmap fonts
@@ -725,11 +747,44 @@ void updateLaser() {
 // 4.0 Separation of concerns: putting together the functions that perform similar actions
 void handleLifeLost() {
     ballDX = 0.0f;
+    // Display the appropriate game over text
+    glUseProgram(0); // Disable custom shaders for text rendering
+    glDisable(GL_DEPTH_TEST); // Disable depth testing
+    glDisable(GL_TEXTURE_2D); // Disable texturing
+
+    // Setup orthographic projection for text rendering
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glLoadIdentity();
+    gluOrtho2D(0, WINDOW_WIDTH, WINDOW_HEIGHT, 0);
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glLoadIdentity();
+
     printPressKeyToContinue();
+
+    // Restore matrices
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+    glMatrixMode(GL_MODELVIEW);
+    glPopMatrix();
 }
 
 void handleGameOver() {
     // Display the appropriate game over text
+    glUseProgram(0); // Disable custom shaders for text rendering
+    glDisable(GL_DEPTH_TEST); // Disable depth testing
+    glDisable(GL_TEXTURE_2D); // Disable texturing
+
+    // Setup orthographic projection for text rendering
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glLoadIdentity();
+    gluOrtho2D(0, WINDOW_WIDTH, WINDOW_HEIGHT, 0);
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glLoadIdentity();
+
     if (allBricksDestroyed()) {
         printWinMessage();
     }
@@ -737,6 +792,12 @@ void handleGameOver() {
         printGameOverText();
     }
     printGameOverOptions();
+
+    // Restore matrices
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+    glMatrixMode(GL_MODELVIEW);
+    glPopMatrix();
 }
 
 void handleGameRestart() {
@@ -788,6 +849,31 @@ void updateGameLogic() {
     checkGameState();
 }
 
+void displayConstantText() {
+    // Ensure OpenGL is in a proper state to render text
+    glUseProgram(0); // Disable custom shaders for text rendering
+    glDisable(GL_DEPTH_TEST); // Disable depth testing
+    glDisable(GL_TEXTURE_2D); // Disable texturing
+
+    // Setup orthographic projection for text rendering
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glLoadIdentity();
+    gluOrtho2D(0, WINDOW_WIDTH, WINDOW_HEIGHT, 0);
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glLoadIdentity();
+
+    // Text display
+    printText();
+    printPowerUpStatus();
+
+    // Restore matrices
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+    glMatrixMode(GL_MODELVIEW);
+    glPopMatrix();
+}
 // GLUT display callback function
 void display() {
     glClear(GL_COLOR_BUFFER_BIT); // Clear the screen
@@ -809,8 +895,7 @@ void display() {
     drawLaser();
 
     // Text display
-    printText();
-    printPowerUpStatus();
+    displayConstantText();
 
     glutSwapBuffers(); // Swap the buffers to make it visible
     glUseProgram(0);
