@@ -97,15 +97,68 @@ float laserDY = 1.0f;
 // Global variable to hold the shader program ID
 GLuint shaderProgram;  
 
+GLuint VAO = 0, VBO = 0;
+// Shader sources
+const char* vertexShaderSource = R"glsl(
+        #version 330 core
+        layout (location = 0) in vec2 aPos;
+        uniform float windowWidth;
+        uniform float windowHeight;
+
+        void main() {
+            // Transform from pixel coordinates to normalized device coordinates
+            float x = (aPos.x / windowWidth) * 2.0 - 1.0;
+            float y = (aPos.y / windowHeight) * 2.0 - 1.0;
+            gl_Position = vec4(x, -y, 0.0, 1.0); // Y is inverted as y increases downwards in pixel coords
+        }
+    )glsl";
+
+const char* fragmentShaderSource = R"glsl(
+    #version 330 core
+    out vec4 FragColor;
+
+    uniform vec3 uColor; // Base color
+    uniform bool useGradient; // Control whether to use gradient coloring
+    uniform float xPos; // Position-based gradient effect
+    uniform float screenWidth; // Screen width for scaling gradient
+
+    void main() {
+        if (useGradient) {
+            float hueX = xPos / screenWidth;
+            vec3 gradientColor = vec3(0.5 + 0.7 * hueX, 0.7, 0.7); // Adjust gradient color
+            FragColor = vec4(uColor * gradientColor, 1.0); // Apply gradient effect
+        } else {
+            FragColor = vec4(uColor, 1.0); // Use plain color
+        }
+    }
+    )glsl";
+
 // 0. Helper functions
 // Function to draw a wall given bottom-left and top-right coordinates
-void drawRectangle(float x1, float y1, float x2, float y2) {
-    glBegin(GL_QUADS);  // Begin drawing a quad
-    glVertex2f(x1, y1); // Bottom left
-    glVertex2f(x2, y1); // Bottom right
-    glVertex2f(x2, y2); // Top right
-    glVertex2f(x1, y2); // Top left
-    glEnd();            // End drawing the quad
+void drawRectangle(float x1, float y1, float x2, float y2, const GLfloat* color, bool applyGradient) {
+    float vertices[] = {
+        x1, y1,
+        x2, y1,
+        x2, y2,
+        x1, y2
+    };
+
+    glBindVertexArray(VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_DYNAMIC_DRAW);  // Load vertex data
+
+    glUseProgram(shaderProgram);
+    glUniform3fv(glGetUniformLocation(shaderProgram, "uColor"), 1, color); // Set color
+    glUniform1f(glGetUniformLocation(shaderProgram, "windowWidth"), static_cast<float>(WINDOW_WIDTH));
+    glUniform1f(glGetUniformLocation(shaderProgram, "windowHeight"), static_cast<float>(WINDOW_HEIGHT));
+    glUniform1f(glGetUniformLocation(shaderProgram, "xPos"), (x1 + x2) / 2); // Middle of the rectangle for gradient effect
+    glUniform1f(glGetUniformLocation(shaderProgram, "screenWidth"), static_cast<float>(WINDOW_WIDTH));
+    glUniform1i(glGetUniformLocation(shaderProgram, "useGradient"), applyGradient ? 1 : 0);
+
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 4); // Draw the rectangle
+
+    glBindVertexArray(0);
+    glUseProgram(0);
 }
 
 void decreaseLives() {
@@ -268,10 +321,14 @@ void printPowerUpStatus() {
 // 2. STATIC ELEMENTS
 // 2.1 WALLS
 void drawWalls() {
-    glColor3fv(WALL_COLOR);  // Set the color for walls
-    drawRectangle(0.0f, 40.0f, WALL_THICKNESS, WALL_HEIGHT);            // left wall
-    drawRectangle(WINDOW_WIDTH - WALL_THICKNESS, 40.0f, WINDOW_WIDTH, WALL_HEIGHT);   // right wall
-    drawRectangle(0.0f, 40.0f, WINDOW_WIDTH, 40 + TOP_WALL_HEIGHT);            // top wall
+    // Draw the left wall
+    drawRectangle(0.0f, 40.0f, WALL_THICKNESS, WALL_HEIGHT, WALL_COLOR, false);
+
+    // Draw the right wall
+    drawRectangle(WINDOW_WIDTH - WALL_THICKNESS, 40.0f, WINDOW_WIDTH, WALL_HEIGHT, WALL_COLOR, false);
+
+    // Draw the top wall
+    drawRectangle(0.0f, 40.0f, WINDOW_WIDTH, 40 + TOP_WALL_HEIGHT, WALL_COLOR, false);
 }
 
 // 2.2 BRICKS
@@ -302,13 +359,17 @@ void initBricks() {
 }
 
 void drawBricks() {
-    // Draw bricks
-    glColor3f(1.0f, 0.3f, 0.3f); // Set brick color
+    const GLfloat BRICK_COLOR[3] = { 1.0f, 1.0f, 1.0f }; // Red color for the bricks
     for (size_t i = 0; i < brickPositionsX.size(); ++i) {
         if (brickActive[i]) {
-            drawRectangle(brickPositionsX[i], brickPositionsY[i],
+            drawRectangle(
+                brickPositionsX[i],
+                brickPositionsY[i],
                 brickPositionsX[i] + brickWidth,
-                brickPositionsY[i] + BRICK_HEIGHT);
+                brickPositionsY[i] + BRICK_HEIGHT,
+                BRICK_COLOR,
+                1  // Enable gradient effect for bricks
+            );
         }
     }
 }
@@ -360,16 +421,34 @@ void drawPaddle() {
     paddleRightWidth = paddleLeftWidth;
 
     // Draw left section
-    glColor3fv(PADDLE_LEFT_COLOR);
-    drawRectangle(paddleX, paddleY, paddleX + paddleLeftWidth, paddleY + PADDLE_HEIGHT);
+    drawRectangle(
+        paddleX,
+        paddleY,
+        paddleX + paddleLeftWidth,
+        paddleY + PADDLE_HEIGHT,
+        PADDLE_LEFT_COLOR,
+        false  // No gradient for the paddle
+    );
 
     // Draw middle section
-    glColor3fv(PADDLE_MIDDLE_COLOR);
-    drawRectangle(paddleX + paddleLeftWidth, paddleY, paddleX + paddleLeftWidth + paddleMiddleWidth, paddleY + PADDLE_HEIGHT);
+    drawRectangle(
+        paddleX + paddleLeftWidth,
+        paddleY,
+        paddleX + paddleLeftWidth + paddleMiddleWidth,
+        paddleY + PADDLE_HEIGHT,
+        PADDLE_MIDDLE_COLOR,
+        false  // No gradient for the paddle
+    );
 
     // Draw right section
-    glColor3fv(PADDLE_RIGHT_COLOR);
-    drawRectangle(paddleX + paddleLeftWidth + paddleMiddleWidth, paddleY, paddleX + paddleLeftWidth + paddleMiddleWidth + paddleRightWidth, paddleY + PADDLE_HEIGHT);
+    drawRectangle(
+        paddleX + paddleLeftWidth + paddleMiddleWidth,
+        paddleY,
+        paddleX + paddleLeftWidth + paddleMiddleWidth + paddleRightWidth,
+        paddleY + PADDLE_HEIGHT,
+        PADDLE_RIGHT_COLOR,
+        false  // No gradient for the paddle
+    );
 }
 
 void updatePaddle(float deltaTime) {
@@ -849,16 +928,18 @@ void displayConstantText() {
     glMatrixMode(GL_MODELVIEW);
     glPopMatrix();
 }
+
 // GLUT display callback function
 void display() {
     glClear(GL_COLOR_BUFFER_BIT); // Clear the screen
 
     updateGameLogic();
 
-    glUseProgram(shaderProgram);
-    glUniform1f(glGetUniformLocation(shaderProgram, "windowWidth"), static_cast<float>(WINDOW_WIDTH));
-    glUniform1f(glGetUniformLocation(shaderProgram, "windowHeight"), static_cast<float>(WINDOW_HEIGHT));
-    glUniform1f(glGetUniformLocation(shaderProgram, "screenWidth"), static_cast<float>(WINDOW_WIDTH));
+    //glUseProgram(shaderProgram);
+    //glUniform1f(glGetUniformLocation(shaderProgram, "windowWidth"), static_cast<float>(WINDOW_WIDTH));
+    //glUniform1f(glGetUniformLocation(shaderProgram, "windowHeight"), static_cast<float>(WINDOW_HEIGHT));
+    //glUniform1f(glGetUniformLocation(shaderProgram, "screenWidth"), static_cast<float>(WINDOW_WIDTH));
+    //glUniform1i(glGetUniformLocation(shaderProgram, "useGradient"), 0);
 
     // Static elements
     drawWalls();
@@ -880,10 +961,6 @@ void display() {
 void initOpenGL() {
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Clear the background to black
 
-    // Set up an orthographic projection using shaders
-    // Note: Normally, you'd pass projection matrices to the shaders, but
-    // for simplicity, we'll assume the shaders are taking care of positions directly.
-
     // Initialize GLEW
     GLenum err = glewInit();
     if (GLEW_OK != err) {
@@ -891,36 +968,19 @@ void initOpenGL() {
         exit(EXIT_FAILURE);
     }
 
-    // Shader sources
-    const char* vertexShaderSource = R"glsl(
-        #version 330 core
-        layout (location = 0) in vec2 aPos;
-        uniform float windowWidth;
-        uniform float windowHeight;
+    // Generate and bind VAO and VBO
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+    glBindVertexArray(VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
-        void main() {
-            // Transform from pixel coordinates to normalized device coordinates
-            float x = (aPos.x / windowWidth) * 2.0 - 1.0;
-            float y = (aPos.y / windowHeight) * 2.0 - 1.0;
-            gl_Position = vec4(x, -y, 0.0, 1.0); // Y is inverted as y increases downwards in pixel coords
-        }
-    )glsl";
+    // Specify attribute pointers
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
 
-    const char* fragmentShaderSource = R"glsl(
-        #version 330 core
-        out vec4 FragColor;
-
-        uniform float xPos;
-        uniform float yPos;
-        uniform float screenWidth;
-
-        void main() {
-            float hueX = xPos / screenWidth;
-            float hueY = yPos / 100.0;
-            vec3 color = vec3(0.85 + 0.1 * hueX, 0.7 + 0.1 * hueY, 0.7);
-            FragColor = vec4(color, 1.0);
-        }
-    )glsl";
+    // Unbind VAO and VBO
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
 
     shaderProgram = createShaderProgram(vertexShaderSource, fragmentShaderSource);
 }
@@ -957,5 +1017,9 @@ int main(int argc, char** argv) {
     glutTimerFunc(0, timer, 0);
 
     glutMainLoop();
+
+    // Clean up OpenGL resources
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
     return 0;
 }
