@@ -17,7 +17,7 @@ int livesLeft = 3;
 // Wall dimensions
 const int WALL_THICKNESS = 20;  // Thickness of the side walls
 const int TOP_WALL_HEIGHT = 20;  // Height of the top wall
-const float WALL_COLOR[3] = { 0.75f, 0.75f, 0.75f };  // Color for all walls
+const float WALL_COLOR[3] = { 0.5f, 0.5f, 0.5f };  // Color for all walls
 const float WALL_HEIGHT = WINDOW_HEIGHT - 60.0;
 
 const int TOP_WALL_BOUNDARY = 40 + TOP_WALL_HEIGHT; // 40 is the starting point (0, 40)
@@ -331,6 +331,72 @@ void drawWalls() {
     drawRectangle(0.0f, 40.0f, WINDOW_WIDTH, 40 + TOP_WALL_HEIGHT, WALL_COLOR, false);
 }
 
+void drawRectangleContour(float x1, float y1, float x2, float y2, const GLfloat* color, float thickness) {
+    // Generate vertices for the contour
+    std::vector<float> contourVertices = {
+        // Top horizontal line
+        x1 - thickness, y1 - thickness,
+        x2 + thickness, y1 - thickness,
+        // Right vertical line
+        x2 + thickness, y1 - thickness,
+        x2 + thickness, y2 + thickness,
+        // Bottom horizontal line
+        x1 - thickness, y2 + thickness,
+        x2 + thickness, y2 + thickness,
+        // Left vertical line
+        x1 - thickness, y1 - thickness,
+        x1 - thickness, y2 + thickness
+    };
+
+    // Generate VAO and VBO for contour
+    GLuint contourVAO, contourVBO;
+    glGenVertexArrays(1, &contourVAO);
+    glGenBuffers(1, &contourVBO);
+
+    // Bind contour VAO and VBO
+    glBindVertexArray(contourVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, contourVBO);
+
+    // Load contour vertex data into VBO
+    glBufferData(GL_ARRAY_BUFFER, contourVertices.size() * sizeof(float), contourVertices.data(), GL_STATIC_DRAW);
+
+    // Specify contour vertex attributes
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    // Use shader program
+    glUseProgram(shaderProgram);
+
+    // Set contour color uniform
+    glUniform3fv(glGetUniformLocation(shaderProgram, "uColor"), 1, color);
+
+    // Draw the contour
+    glDrawArrays(GL_LINES, 0, contourVertices.size() / 2);
+
+    // Cleanup contour VAO and VBO
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+
+    // Delete VAO and VBO
+    glDeleteVertexArrays(1, &contourVAO);
+    glDeleteBuffers(1, &contourVBO);
+}
+
+void drawWallContours() {
+    // Black color for the contour
+    GLfloat contourColor[] = { 0.0f, 0.0f, 0.0f };
+    // Contour thickness
+    const float contourThickness = 0.1f; // Adjust this value to change the thickness
+
+    // Draw contours for the left wall
+    drawRectangleContour(0.0f, 60.0f, WALL_THICKNESS, WALL_HEIGHT, contourColor, contourThickness);
+
+    // Draw contours for the right wall
+    drawRectangleContour(WINDOW_WIDTH - WALL_THICKNESS, 60.0f, WINDOW_WIDTH, WALL_HEIGHT, contourColor, contourThickness);
+
+    // Draw contours for the top wall
+    drawRectangleContour(0.0f, 40.0f, WINDOW_WIDTH, 40 + TOP_WALL_HEIGHT, contourColor, contourThickness);
+}
 // 2.2 BRICKS
 void initBricks() {
     int horizontal_margin = 20;
@@ -378,7 +444,7 @@ void drawBrickContours() {
     // Black color for the contour
     GLfloat contourColor[] = { 0.0f, 0.0f, 0.0f };
     // Contour thickness
-    const float contourThickness = 2.0f; // Adjust this value to change the thickness
+    const float contourThickness = 1.0f; // Adjust this value to change the thickness
 
     // Loop over each active brick
     for (size_t i = 0; i < brickPositionsX.size(); ++i) {
@@ -1075,7 +1141,7 @@ void displayConstantText() {
 // GLUT display callback function
 void display() {
     // Set dark gray background color
-    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+    glClearColor(0.075f, 0.075f, 0.075f, 1.0f);
 
     glClear(GL_COLOR_BUFFER_BIT); // Clear the screen
 
@@ -1083,6 +1149,7 @@ void display() {
 
     // Static elements
     drawWalls();
+    drawWallContours();
     drawBricks();
     drawBrickContours();
 
@@ -1100,8 +1167,6 @@ void display() {
 
 // Initialize OpenGL Graphics
 void initOpenGL() {
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Clear the background to black
-
     // Initialize GLEW
     GLenum err = glewInit();
     if (GLEW_OK != err) {
