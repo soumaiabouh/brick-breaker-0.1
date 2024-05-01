@@ -374,6 +374,73 @@ void drawBricks() {
     }
 }
 
+void drawBrickContours() {
+    // Black color for the contour
+    GLfloat contourColor[] = { 0.0f, 0.0f, 0.0f };
+    // Contour thickness
+    const float contourThickness = 2.0f; // Adjust this value to change the thickness
+
+    // Loop over each active brick
+    for (size_t i = 0; i < brickPositionsX.size(); ++i) {
+        if (brickActive[i]) {
+            // Calculate brick position and size
+            float x1 = brickPositionsX[i];
+            float y1 = brickPositionsY[i];
+            float x2 = x1 + brickWidth;
+            float y2 = y1 + BRICK_HEIGHT;
+
+            // Generate vertices for the contour
+            std::vector<float> contourVertices = {
+                // Top horizontal line
+                x1 - contourThickness, y1 - contourThickness,
+                x2 + contourThickness, y1 - contourThickness,
+                // Right vertical line
+                x2 + contourThickness, y1 - contourThickness,
+                x2 + contourThickness, y2 + contourThickness,
+                // Bottom horizontal line
+                x1 - contourThickness, y2 + contourThickness,
+                x2 + contourThickness, y2 + contourThickness,
+                // Left vertical line
+                x1 - contourThickness, y1 - contourThickness,
+                x1 - contourThickness, y2 + contourThickness
+            };
+
+            // Generate VAO and VBO for contour
+            GLuint contourVAO, contourVBO;
+            glGenVertexArrays(1, &contourVAO);
+            glGenBuffers(1, &contourVBO);
+
+            // Bind contour VAO and VBO
+            glBindVertexArray(contourVAO);
+            glBindBuffer(GL_ARRAY_BUFFER, contourVBO);
+
+            // Load contour vertex data into VBO
+            glBufferData(GL_ARRAY_BUFFER, contourVertices.size() * sizeof(float), contourVertices.data(), GL_STATIC_DRAW);
+
+            // Specify contour vertex attributes
+            glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+            glEnableVertexAttribArray(0);
+
+            // Use shader program
+            glUseProgram(shaderProgram);
+
+            // Set contour color uniform
+            glUniform3fv(glGetUniformLocation(shaderProgram, "uColor"), 1, contourColor);
+
+            // Draw the contour
+            glDrawArrays(GL_LINES, 0, contourVertices.size() / 2);
+
+            // Cleanup contour VAO and VBO
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
+            glBindVertexArray(0);
+
+            // Delete VAO and VBO
+            glDeleteVertexArrays(1, &contourVAO);
+            glDeleteBuffers(1, &contourVBO);
+        }
+    }
+}
+
 bool allBricksDestroyed() {
     for (bool active : brickActive) {
         if (active) return false;
@@ -1017,6 +1084,7 @@ void display() {
     // Static elements
     drawWalls();
     drawBricks();
+    drawBrickContours();
 
     // Dynamic elements
     drawPaddle();
