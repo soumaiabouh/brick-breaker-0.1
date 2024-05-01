@@ -272,11 +272,11 @@ void printText() {
 
 void printGameOverText() {
     gameOver = true; // Set game over flag
-    const char* game_over_text = "Game Over!";
+    const char* game_over_text = "GAME OVER";
     float text_width = calculateStringWidth(GLUT_BITMAP_HELVETICA_18, game_over_text);
     float text_x = (WINDOW_WIDTH - text_width) / 2; // Center the text horizontally
     float text_y = WINDOW_HEIGHT / 2; // Position the text vertically in the middle
-    glColor3f(1.0f, 0.0f, 0.0f); // Red color for the game over text
+    glColor3f(1.0f, 0.25f, 0.25f); // Red color for the game over text
     renderBitmapString(text_x, text_y, GLUT_BITMAP_HELVETICA_18, game_over_text);
 }
 
@@ -313,7 +313,7 @@ void printPowerUpStatus() {
         float text_width = calculateStringWidth(GLUT_BITMAP_9_BY_15, power_up_text.c_str());
         float text_x = (WINDOW_WIDTH - text_width) / 2;
         float text_y = WINDOW_HEIGHT - 15; // Display at the bottom of the screen
-        glColor3f(0.0f, 1.0f, 0.0f);
+        glColor3f(0.0f, 1.0f, 0.5f);
         renderBitmapString(text_x, text_y, GLUT_BITMAP_9_BY_15, power_up_text.c_str());
     }
 }
