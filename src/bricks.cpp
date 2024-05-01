@@ -603,6 +603,11 @@ void updatePaddle(float deltaTime) {
 
 // Keyboard handling
 void keyboardHandler(unsigned char key, int x, int y) {
+    if (key == 27) { // ASCII value for escape key
+        std::cout << "Exiting game." << std::endl;
+        glutDestroyWindow(glutGetWindow()); // Close the window and exit GLUT main loop
+        return;
+    }
     if (gameOver) {
         if (key == 'r' || key == 'R') {
             restartGame = true; // Reset the game state flag
@@ -850,7 +855,7 @@ int checkBrickCollision(float& ball_x, float& ball_y, float& ball_dx, float& bal
                 int row = i / BRICK_COLS;
                 if (row < 2) gameScore += 5;       // Top two rows
                 else if (row < 4) gameScore += 3;  // Middle two rows
-                else gameScore += 10;               // Bottom two rows
+                else gameScore += 1;               // Bottom two rows
 
                 brickActive[i] = false;  // Remove the brick
 
