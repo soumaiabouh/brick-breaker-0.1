@@ -21,7 +21,7 @@ bool showInitialText = true;
 const int WALL_THICKNESS = 20;  // Thickness of the side walls
 const int TOP_WALL_HEIGHT = 20;  // Height of the top wall
 const float WALL_COLOR[3] = { 0.7f, 0.7f, 0.7f };  // Color for all walls
-const float WALL_HEIGHT = WINDOW_HEIGHT - 50.0;
+const float WALL_HEIGHT = WINDOW_HEIGHT - 55.0;
 
 const int TOP_WALL_BOUNDARY = 40 + TOP_WALL_HEIGHT; // 40 is the starting point (0, 40)
 const int LEFT_WALL_BOUNDARY = WALL_THICKNESS;
@@ -326,11 +326,11 @@ void printPowerUpStatus() {
 void drawWalls() {
     // Draw the left wall
     drawRectangle(0.0f, 40.0f, WALL_THICKNESS, WALL_HEIGHT, WALL_COLOR, false);
-    drawRectangle(0.0f, 670.0f, WALL_THICKNESS, 800, WALL_COLOR, false);
+    drawRectangle(0.0f, 675.0f, WALL_THICKNESS, 800, WALL_COLOR, false);
 
     // Draw the right wall
     drawRectangle(WINDOW_WIDTH - WALL_THICKNESS, 40.0f, WINDOW_WIDTH, WALL_HEIGHT, WALL_COLOR, false);
-    drawRectangle(WINDOW_WIDTH - WALL_THICKNESS, 670.0f, WINDOW_WIDTH, 800, WALL_COLOR, false);
+    drawRectangle(WINDOW_WIDTH - WALL_THICKNESS, 675.0f, WINDOW_WIDTH, 800, WALL_COLOR, false);
 
     // Draw the top wall
     drawRectangle(0.0f, 40.0f, WINDOW_WIDTH, 40 + TOP_WALL_HEIGHT, WALL_COLOR, false);
@@ -394,11 +394,11 @@ void drawWallContours() {
 
     // Draw contours for the left wall
     drawRectangleContour(0.0f, 60.0f, WALL_THICKNESS, WALL_HEIGHT, contourColor, contourThickness);
-    drawRectangleContour(0.0f, 670.0f, WALL_THICKNESS, 800, contourColor, contourThickness);
+    drawRectangleContour(0.0f, 675.0f, WALL_THICKNESS, 800, contourColor, contourThickness);
 
     // Draw contours for the right wall
     drawRectangleContour(WINDOW_WIDTH - WALL_THICKNESS, 60.0f, WINDOW_WIDTH, WALL_HEIGHT, contourColor, contourThickness);
-    drawRectangleContour(WINDOW_WIDTH - WALL_THICKNESS, 670.0f, WINDOW_WIDTH, 800, contourColor, contourThickness);
+    drawRectangleContour(WINDOW_WIDTH - WALL_THICKNESS, 675.0f, WINDOW_WIDTH, 800, contourColor, contourThickness);
 
     // Draw contours for the top wall
     drawRectangleContour(0.0f, 40.0f, WINDOW_WIDTH, 40 + TOP_WALL_HEIGHT, contourColor, contourThickness);
@@ -588,6 +588,20 @@ void drawPaddle() {
         paddleY + PADDLE_HEIGHT,
         PADDLE_RIGHT_COLOR,
         false  // No gradient for the paddle
+    );
+}
+
+void drawPaddleContours() {
+    GLfloat contourColor[] = { 0.0f, 0.0f, 0.0f };
+    float countour_thickness = 3.0f;
+    // Draw the black contour around the paddle
+    drawRectangle(
+        paddleX - countour_thickness,                        // Left side of contour
+        paddleY - countour_thickness,                        // Top side of contour
+        paddleX + paddleLength + countour_thickness,         // Right side of contour
+        paddleY + PADDLE_HEIGHT + countour_thickness,        // Bottom side of contour
+        contourColor,               // Black color for the contour
+        false                               // No gradient for the contour
     );
 }
 
@@ -1210,7 +1224,9 @@ void display() {
         drawBrickContours();
 
         // Dynamic elements
+        drawPaddleContours();
         drawPaddle();
+                
         drawBall();
         drawLaser();
 
