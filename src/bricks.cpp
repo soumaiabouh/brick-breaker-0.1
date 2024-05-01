@@ -10,7 +10,7 @@
 // Global Vars
 int WINDOW_WIDTH = 600;
 int WINDOW_HEIGHT = 700;
-std::string STUDENT_ID = "261053234"; //TODO: rename based on who's submitting it
+std::string STUDENT_ID = "261053234";
 int gameScore = 0;
 int livesLeft = 3;
 
@@ -251,7 +251,7 @@ void printText() {
 
     const char* score_to_print = score_str.c_str();
     const char* lives_to_print = lives_str.c_str();
-    const char* student_id = "261053234";
+    const char* student_id = STUDENT_ID.c_str();
 
     // Dividing up the width into 3 subcells
     float third_width = WINDOW_WIDTH / 3.0f;
@@ -1260,7 +1260,7 @@ int main(int argc, char** argv) {
 
     // 2. Setting the size
     glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
-    glutCreateWindow("Brick Breaker – 260979679 & 261053234");
+    glutCreateWindow("Brick Breaker – 261053234 & 260979679");
 
     // 3. Initialization
     initOpenGL();  // Initialize OpenGL settings
