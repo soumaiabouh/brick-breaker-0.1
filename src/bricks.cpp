@@ -187,31 +187,6 @@ GLuint createShaderProgram(const char* vertexSource, const char* fragmentSource)
     return shaderProgram;
 }
 
-// For loading the textures:
-GLuint loadTextureAtlas(const char* fileName) {
-    int width, height, nrChannels;
-    stbi_set_flip_vertically_on_load(true); // Ensure texture is flipped correctly
-    unsigned char* data = stbi_load(fileName, &width, &height, &nrChannels, 0);
-    if (!data) {
-        std::cerr << "Failed to load texture" << std::endl;
-        return 0;
-    }
-
-    GLuint textureID;
-    glGenTextures(1, &textureID);
-    glBindTexture(GL_TEXTURE_2D, textureID);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-    glGenerateMipmap(GL_TEXTURE_2D);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    stbi_image_free(data);
-    return textureID;
-}
-
 // 1. TEXT
 // Function to render text using GLUT's bitmap fonts
 void printText() {
