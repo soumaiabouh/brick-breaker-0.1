@@ -394,9 +394,11 @@ void drawWallContours() {
 
     // Draw contours for the left wall
     drawRectangleContour(0.0f, 60.0f, WALL_THICKNESS, WALL_HEIGHT, contourColor, contourThickness);
+    drawRectangleContour(0.0f, 670.0f, WALL_THICKNESS, 800, contourColor, contourThickness);
 
     // Draw contours for the right wall
     drawRectangleContour(WINDOW_WIDTH - WALL_THICKNESS, 60.0f, WINDOW_WIDTH, WALL_HEIGHT, contourColor, contourThickness);
+    drawRectangleContour(WINDOW_WIDTH - WALL_THICKNESS, 670.0f, WINDOW_WIDTH, 800, contourColor, contourThickness);
 
     // Draw contours for the top wall
     drawRectangleContour(0.0f, 40.0f, WINDOW_WIDTH, 40 + TOP_WALL_HEIGHT, contourColor, contourThickness);
