@@ -125,7 +125,7 @@ const char* fragmentShaderSource = R"glsl(
     void main() {
         if (useGradient) {
             float hueX = xPos / screenWidth;
-            vec3 gradientColor = vec3(0.5 + 0.7 * hueX, 0.7, 0.7); // Adjust gradient color
+            vec3 gradientColor = vec3(0.1 + 0.95 * hueX, 0.7, 0.7); // Adjust gradient color
             FragColor = vec4(uColor * gradientColor, 1.0); // Apply gradient effect
         } else {
             FragColor = vec4(uColor, 1.0); // Use plain color
@@ -570,14 +570,90 @@ void timer(int value) {
 
 //3.2 Ball
 void drawBall() {
-    glColor3f(1.0f, 1.0f, 1.0f); // White color for the ball
-    glBegin(GL_TRIANGLE_FAN);    // Begin drawing a circle
-    glVertex2f(ballX, ballY);  // Center of circle
+    // White color for the ball
+    GLfloat ballColor[] = { 1.0f, 1.0f, 1.0f };
+    // Black color for the contour
+    GLfloat contourColor[] = { 0.0f, 0.0f, 0.0f };
+    // Contour size:
+    const float contourThickness = 3.0f; // Adjust this value to change the thickness
+
+    // Generate vertices for the inner circle (ball)
+    std::vector<float> ballVertices;
     for (int angle = 0; angle <= 360; angle++) {
         float rad = angle * DEG2RAD; // Convert angle to radians
-        glVertex2f(ballX + cos(rad) * ballRadius, ballY + sin(rad) * ballRadius);
+        ballVertices.push_back(ballX + cos(rad) * ballRadius);
+        ballVertices.push_back(ballY + sin(rad) * ballRadius);
     }
-    glEnd();
+
+    // Generate VAO and VBO for ball
+    GLuint ballVAO, ballVBO;
+    glGenVertexArrays(1, &ballVAO);
+    glGenBuffers(1, &ballVBO);
+
+    // Bind ball VAO and VBO
+    glBindVertexArray(ballVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, ballVBO);
+
+    // Load ball vertex data into VBO
+    glBufferData(GL_ARRAY_BUFFER, ballVertices.size() * sizeof(float), ballVertices.data(), GL_STATIC_DRAW);
+
+    // Specify ball vertex attributes
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    // Use shader program
+    glUseProgram(shaderProgram);
+
+    // Set ball color uniform
+    glUniform3fv(glGetUniformLocation(shaderProgram, "uColor"), 1, ballColor);
+
+    // Draw the ball
+    glDrawArrays(GL_TRIANGLE_FAN, 0, ballVertices.size() / 2);
+
+    // Cleanup ball VAO and VBO
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+
+    // Generate vertices for the outer circles (contour)
+    for (float thickness = 1.0f; thickness <= contourThickness; thickness++) {
+        std::vector<float> contourVertices;
+        float contourRadius = ballRadius + thickness;
+        for (int angle = 0; angle <= 360; angle++) {
+            float rad = angle * DEG2RAD; // Convert angle to radians
+            contourVertices.push_back(ballX + cos(rad) * contourRadius);
+            contourVertices.push_back(ballY + sin(rad) * contourRadius);
+        }
+
+        // Generate VAO and VBO for contour
+        GLuint contourVAO, contourVBO;
+        glGenVertexArrays(1, &contourVAO);
+        glGenBuffers(1, &contourVBO);
+
+        // Bind contour VAO and VBO
+        glBindVertexArray(contourVAO);
+        glBindBuffer(GL_ARRAY_BUFFER, contourVBO);
+
+        // Load contour vertex data into VBO
+        glBufferData(GL_ARRAY_BUFFER, contourVertices.size() * sizeof(float), contourVertices.data(), GL_STATIC_DRAW);
+
+        // Specify contour vertex attributes
+        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(0);
+
+        // Set contour color uniform
+        glUniform3fv(glGetUniformLocation(shaderProgram, "uColor"), 1, contourColor);
+
+        // Draw the contour
+        glDrawArrays(GL_LINE_LOOP, 0, contourVertices.size() / 2);
+
+        // Cleanup contour VAO and VBO
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
+
+        // Delete VAO and VBO
+        glDeleteVertexArrays(1, &contourVAO);
+        glDeleteBuffers(1, &contourVBO);
+    }
 }
 
 int checkWallCollision(int x, int y) {
@@ -931,15 +1007,12 @@ void displayConstantText() {
 
 // GLUT display callback function
 void display() {
+    // Set dark gray background color
+    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+
     glClear(GL_COLOR_BUFFER_BIT); // Clear the screen
 
     updateGameLogic();
-
-    //glUseProgram(shaderProgram);
-    //glUniform1f(glGetUniformLocation(shaderProgram, "windowWidth"), static_cast<float>(WINDOW_WIDTH));
-    //glUniform1f(glGetUniformLocation(shaderProgram, "windowHeight"), static_cast<float>(WINDOW_HEIGHT));
-    //glUniform1f(glGetUniformLocation(shaderProgram, "screenWidth"), static_cast<float>(WINDOW_WIDTH));
-    //glUniform1i(glGetUniformLocation(shaderProgram, "useGradient"), 0);
 
     // Static elements
     drawWalls();
