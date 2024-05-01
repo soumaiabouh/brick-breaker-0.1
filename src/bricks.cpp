@@ -46,8 +46,8 @@ int paddleX = (WINDOW_WIDTH - paddleLength) / 2;  // Starting x position
 int paddleY = 650;  // Vertical position
 
 // Colors for the paddle sections
-const GLfloat PADDLE_LEFT_COLOR[3] = { 1.0f, 0.0f, 0.4f };  // Magenta
-const GLfloat PADDLE_MIDDLE_COLOR[3] = { 0.0f, 0.0f, 128.0f / 255.0f }; // Navy
+const GLfloat PADDLE_LEFT_COLOR[3] = { 1.0f, 0.35f, 0.4f };  // Magenta
+const GLfloat PADDLE_MIDDLE_COLOR[3] = { 0.1f, 0.1f, 0.5f }; // Navy
 const GLfloat PADDLE_RIGHT_COLOR[3] = { 0.0f, 123.0f / 255.0f, 167.0f / 255.0f };;  // Cerulean
 
 // Segment widths
