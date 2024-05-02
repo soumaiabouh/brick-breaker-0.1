@@ -1,15 +1,15 @@
-
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
+#include <GL/glew.h>
+#include <GL/freeglut.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-
 #include <iostream>
 #include <string>
 #include <vector>
-
+#include <cmath>
 #include <btBulletDynamicsCommon.h>
+
+
 
 float cuboidMoveSpeed = 0.2f;
 glm::vec3 cuboidMoveDirection(0.0f, 0.0f, 0.0f);
@@ -17,11 +17,38 @@ int selectedCuboidIndex = 0;
 float cuboidMinX = -7.0f;
 float cuboidMaxX = 7.0f;
 
-const unsigned int SCREEN_WIDTH = 800;
-const unsigned int SCREEN_HEIGHT = 600;
+const  int SCREEN_WIDTH = 800;
+const  int SCREEN_HEIGHT = 600;
+std::string STUDENT_ID = "261053234"; //TODO: rename based on who's submitting it
+int gameScore = 0;
+int livesLeft = 3;
 
-void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-void processInput(GLFWwindow* window);
+
+unsigned int shaderProgram;
+unsigned int planeVAO;
+btDiscreteDynamicsWorld* dynamicsWorld;
+std::vector<btRigidBody*> cuboidRigidBodies;
+const int numBrickRows = 12;
+const int numBrickCols = 10;
+const int numNonBrick = 5;
+const int numCuboids = numNonBrick + numBrickRows * numBrickCols;
+std::vector<std::vector<unsigned int>> cuboidIndices;
+float colors[numCuboids][3] = {
+        {1.0f, 1.0f, 0.0f},
+        {1.0f, 1.0f, 0.0f},
+        {1.0f, 1.0f, 0.0f},
+        {1.0f, 1.0f, 0.0f},
+        {1.0f, 1.0f, 0.0f}
+        // The remaining colors will be filled with brick colors
+};
+unsigned int ballVAO;
+std::vector<unsigned int> cuboidVAOs;
+bool* isBrick;
+btRigidBody* ballRigidBody;
+std::vector<btCollisionShape*> cuboidShapes;
+std::vector<unsigned int> cuboidVBOs;
+std::vector<unsigned int> cuboidEBOs;
+
 
 const char* vertexShaderSource = R"glsl(
 #version 330 core
@@ -211,53 +238,251 @@ void generateSphere(float radius, int segments, int rings, std::vector<float>& v
 
 // Ball variables 
 glm::vec3 ballInitialVelocity = glm::vec3(0.0f, 0.0f, -10.0f);
-glm::vec3 ballInitialPosition = glm::vec3(4.0f, 0.0f,9.0f);
+glm::vec3 ballInitialPosition = glm::vec3(4.0f, 0.0f, 9.0f);
 glm::vec3 ballVelocity = ballInitialVelocity;
 glm::vec3 ballPosition = ballInitialPosition; // Initial velocity
 float ballRadius = 0.2f;
 int sphereSegments = 40; // Increase segments and rings for a smoother sphere
 int sphereRings = 40;
 
-int main() {
+void display() {
+    // Render commands here
+    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    // Set the shader to use
+    glUseProgram(shaderProgram);
+
+    // Set up the transformation matrices
+    glm::mat4 model = glm::mat4(1.0f);
+    glm::mat4 view = glm::mat4(1.0f);
+    glm::mat4 projection = glm::mat4(1.0f);
+
+    glm::mat4 planeModel = glm::mat4(1.0f);
+    planeModel = glm::translate(planeModel, glm::vec3(0.0f, 0.0f, 0.0f)); // Translate the plane to y = -3
+
+    model = glm::rotate(model, (float)glutGet(GLUT_ELAPSED_TIME) / 1000.0f, glm::vec3(0.5f, 1.0f, 0.0f));
+
+    glm::vec3 cameraPos = glm::vec3(3.0f, 15.0f, 25.0f);
+    glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
+    glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+
+    // Create the view matrix using glm::lookAt
+    view = glm::lookAt(cameraPos, cameraTarget, cameraUp);
+
+    projection = glm::perspective(glm::radians(45.0f), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 100.0f);
+
+    // Set the uniform variables in the shader
+    unsigned int modelLoc = glGetUniformLocation(shaderProgram, "model");
+    unsigned int viewLoc = glGetUniformLocation(shaderProgram, "view");
+    unsigned int projectionLoc = glGetUniformLocation(shaderProgram, "projection");
+    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+    glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+    glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+
+    // Set light properties
+    glUniform3f(glGetUniformLocation(shaderProgram, "lightColor"), 1.0f, 1.0f, 1.0f);
+    glUniform3f(glGetUniformLocation(shaderProgram, "lightPos"), 1.2f, 10.0f, 2.0f);
+    glUniform3f(glGetUniformLocation(shaderProgram, "objectColor"), 1.0f, 0.5f, 0.31f);
+    glUniform3fv(glGetUniformLocation(shaderProgram, "viewPos"), 1, glm::value_ptr(cameraPos));
+
+    // Render the plane with a specific color
+    glUniform3f(glGetUniformLocation(shaderProgram, "objectColor"), 0.5f, 0.8f, 0.7f); // Set the plane color to a light blue-green
+    glBindVertexArray(planeVAO);
+    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(planeModel));
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+
+    // Get the final model matrix of the rendering plane
+    glm::mat4 finalPlaneModel = planeModel * model;
+    glm::vec3 planePosition = glm::vec3(finalPlaneModel[3][0], finalPlaneModel[3][1], finalPlaneModel[3][2]);
+
+    // Create the Bullet Physics plane at the same position as the rendering plane
+    btCollisionShape* planeShape = new btStaticPlaneShape(btVector3(0, 1, 0), planePosition.y);
+    btTransform planeTransform;
+    planeTransform.setIdentity();
+    planeTransform.setOrigin(btVector3(planePosition.x, planePosition.y, planePosition.z));
+    btScalar planeMass(0.0f); // Set mass to 0 for static objects
+    btVector3 planeLocalInertia(0, 0, 0);
+    btDefaultMotionState* planeMotionState = new btDefaultMotionState(planeTransform);
+    btRigidBody::btRigidBodyConstructionInfo planeRigidBodyCI(planeMass, planeMotionState, planeShape, planeLocalInertia);
+    planeRigidBodyCI.m_restitution = 1.0f; // Set restitution to 1 for perfectly elastic collisions
+    planeRigidBodyCI.m_friction = 0.0f; // Set friction to 0 to avoid slowing down
+    btRigidBody* planeRigidBody = new btRigidBody(planeRigidBodyCI);
+    dynamicsWorld->addRigidBody(planeRigidBody);
+
+    // Update the position of the selected cuboid based on user input
+    int selectedCuboidIndex = 0;
+    btTransform cuboidTransform;
+    cuboidRigidBodies[selectedCuboidIndex]->getMotionState()->getWorldTransform(cuboidTransform);
+    glm::vec3 cuboidPosition = glm::vec3(cuboidTransform.getOrigin().getX(), cuboidTransform.getOrigin().getY(), cuboidTransform.getOrigin().getZ());
+    cuboidPosition += cuboidMoveDirection * cuboidMoveSpeed;
+
+    // Clamp the cuboid position within the x-coordinate limits
+    cuboidPosition.x = glm::clamp(cuboidPosition.x, cuboidMinX, cuboidMaxX);
+
+    cuboidTransform.setOrigin(btVector3(cuboidPosition.x, cuboidPosition.y, cuboidPosition.z));
+    cuboidRigidBodies[selectedCuboidIndex]->getMotionState()->setWorldTransform(cuboidTransform);
+
+    // Synchronize the Bullet Physics world with the updated cuboid position
+    cuboidRigidBodies[selectedCuboidIndex]->setWorldTransform(cuboidTransform);
+    cuboidRigidBodies[selectedCuboidIndex]->getMotionState()->setWorldTransform(cuboidTransform);
+
+    // Render the cuboids
+    for (int i = 0; i < numCuboids; ++i) {
+        // Skip rendering deleted cuboids
+        if (cuboidRigidBodies[i] == nullptr) {
+            continue;
+        }
+
+        btTransform cuboidTransform;
+        cuboidRigidBodies[i]->getMotionState()->getWorldTransform(cuboidTransform);
+        glm::vec3 cuboidPosition = glm::vec3(cuboidTransform.getOrigin().getX(), cuboidTransform.getOrigin().getY(), cuboidTransform.getOrigin().getZ());
+
+        glUniform3f(glGetUniformLocation(shaderProgram, "objectColor"), colors[i][0], colors[i][1], colors[i][2]);
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, cuboidPosition);
+        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+        glBindVertexArray(cuboidVAOs[i]);
+        glDrawElements(GL_TRIANGLES, cuboidIndices[i].size(), GL_UNSIGNED_INT, 0);
+    }
+
+    // Render the ball using indexed rendering
+    glBindVertexArray(ballVAO);
+    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(glm::translate(glm::mat4(1.0f), ballPosition)));
+    glUniform3f(glGetUniformLocation(shaderProgram, "objectColor"), 1.0f, 0.0f, 0.0f); // Set ball color to red
+
+
+    glDrawElements(GL_TRIANGLES, static_cast<unsigned int>(ballIndices.size()) / 3, GL_UNSIGNED_INT, 0);
+
+
+    glutSwapBuffers();
+}
+
+void reshape(int width, int height) {
+    glViewport(0, 0, width, height);
+}
+
+void keyboard(unsigned char key, int x, int y) {
+    if (key == 27) {  // ASCII code for ESC key
+        std::cout << "Exiting game." << std::endl;
+        glutDestroyWindow(glutGetWindow()); // Close the window and exit GLUT main loop
+        return;
+    }
+}
+
+void specialKeyboard(int key, int x, int y) {
+    // Update cuboid move direction based on left and right arrow key inputs
+    cuboidMoveDirection = glm::vec3(0.0f, 0.0f, 0.0f);
+    if (key == GLUT_KEY_LEFT) {
+        cuboidMoveDirection.x = -1.0f;
+    }
+    if (key == GLUT_KEY_RIGHT) {
+        cuboidMoveDirection.x = 1.0f;
+    }
+}
+
+void timer(int value) {
+    // Update ball position and velocity
+    float deltaTime = 0.01f;  // Assuming a constant time step for simplicity
+
+    dynamicsWorld->stepSimulation(deltaTime, 10);
+
+    for (int i = 0; i < numCuboids; ++i) {
+        if (isBrick[i] && cuboidRigidBodies[i] != nullptr) {
+            MyContactResultCallback callback;
+            dynamicsWorld->contactPairTest(ballRigidBody, cuboidRigidBodies[i], callback);
+
+            if (callback.hasContact()) {
+                // Get the collision normal from the callback
+                btVector3 collisionNormal = callback.getCollisionNormal();
+
+                // Get the ball's current velocity
+                btVector3 ballVelocity = ballRigidBody->getLinearVelocity();
+
+                // Calculate the reflection direction using the formula: R = V - 2(V · N)N
+                btVector3 reflectedVelocity = ballVelocity - 2.0f * ballVelocity.dot(collisionNormal) * collisionNormal;
+
+                // Update the ball's velocity with the reflected direction
+                ballRigidBody->setLinearVelocity(reflectedVelocity);
+
+                // Remove the cuboid from the dynamics world
+                dynamicsWorld->removeRigidBody(cuboidRigidBodies[i]);
+
+                // Delete the cuboid's collision shape, rigid body, and motion state
+                delete cuboidRigidBodies[i]->getMotionState();
+                delete cuboidRigidBodies[i];
+                delete cuboidShapes[i];
+
+                // Remove the cuboid's VAO, VBO, and EBO
+                glDeleteVertexArrays(1, &cuboidVAOs[i]);
+                glDeleteBuffers(1, &cuboidVBOs[i]);
+                glDeleteBuffers(1, &cuboidEBOs[i]);
+
+                // Mark the cuboid as deleted
+                isBrick[i] = false;
+
+                // Set the corresponding rigid body and collision shape pointers to nullptr
+                cuboidRigidBodies[i] = nullptr;
+                cuboidShapes[i] = nullptr;
+            }
+        }
+    }
+
+    // Get the ball's current velocity
+    btVector3 currentVelocity = ballRigidBody->getLinearVelocity();
+
+    // Calculate the speed of the ball
+    btScalar speed = currentVelocity.length();
+
+    // Define the desired constant speed
+    btScalar constantSpeed = 20.0f; // Adjust the value as needed
+
+    // Check if the current speed is not zero to avoid division by zero
+    if (speed != 0.0f) {
+        // Calculate the velocity direction
+        btVector3 velocityDirection = currentVelocity.normalized();
+
+        // Set the new velocity with the constant speed and the current direction
+        btVector3 newVelocity = velocityDirection * constantSpeed;
+
+        // Update the ball's velocity
+        ballRigidBody->setLinearVelocity(newVelocity);
+    }
+
+    btTransform ballTransform;
+    ballRigidBody->getMotionState()->getWorldTransform(ballTransform);
+    ballPosition = glm::vec3(ballTransform.getOrigin().getX(), ballTransform.getOrigin().getY(), ballTransform.getOrigin().getZ());
+    ballVelocity = glm::vec3(ballRigidBody->getLinearVelocity().getX(), ballRigidBody->getLinearVelocity().getY(), ballRigidBody->getLinearVelocity().getZ());
+    btVector3 ballVelocity = ballRigidBody->getLinearVelocity();
+    ballVelocity.setY(std::min(ballVelocity.getY(), 0.0f));
+    ballRigidBody->setLinearVelocity(ballVelocity);
+
+    glutPostRedisplay();
+    glutTimerFunc(10, timer, 0);  // Call the timer function every 10 milliseconds
+}
+
+int main(int argc, char** argv) {
+    // Initialize GLUT
+    glutInit(&argc, argv);
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
+    glutInitWindowSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+    glutCreateWindow("LearnOpenGL");
+
+    // Initialize GLEW
+    GLenum err = glewInit();
+    if (err != GLEW_OK) {
+        std::cerr << "Failed to initialize GLEW: " << glewGetErrorString(err) << std::endl;
+        return -1;
+    }
+    
 
     // Bullet Physics initialization
     btDefaultCollisionConfiguration* collisionConfiguration = new btDefaultCollisionConfiguration();
     btCollisionDispatcher* dispatcher = new btCollisionDispatcher(collisionConfiguration);
     btBroadphaseInterface* overlappingPairCache = new btDbvtBroadphase();
     btSequentialImpulseConstraintSolver* solver = new btSequentialImpulseConstraintSolver;
-    btDiscreteDynamicsWorld* dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfiguration);
+    dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfiguration);
     dynamicsWorld->setGravity(btVector3(0, -9.8, 0));
-    // Initialize GLFW
-    if (!glfwInit()) {
-        std::cerr << "Failed to initialize GLFW" << std::endl;
-        return -1;
-    }
-
-    // Set up the window properties
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-
-    // Create the window
-    GLFWwindow* window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "LearnOpenGL", NULL, NULL);
-    if (window == NULL) {
-        std::cerr << "Failed to create GLFW window" << std::endl;
-        glfwTerminate();
-        return -1;
-    }
-
-    // Set the window's framebuffer resize callback
-    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-
-    // Make the context current
-    glfwMakeContextCurrent(window);
-
-    // Initialize GLAD
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-        std::cerr << "Failed to initialize GLAD" << std::endl;
-        return -1;
-    }
 
     float planeVertices[] = {
         // Positions          // Normals           // Texture Coords
@@ -269,17 +494,16 @@ int main() {
         -10.0f, 0.0f, -15.0f,  0.0f,  1.0f,  0.0f,  0.0f,   0.0f
     };
 
-
-
     // Vertex Buffer Object and Vertex Array Object for the plane
-    unsigned int planeVAO, planeVBO;
+    unsigned int  planeVBO;
 
-    // Generate and bind the VAO and VBO for the planeradius
+    // Generate and bind the VAO and VBO for the plane
     glGenVertexArrays(1, &planeVAO);
     glGenBuffers(1, &planeVBO);
     glBindVertexArray(planeVAO);
     glBindBuffer(GL_ARRAY_BUFFER, planeVBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(planeVertices), planeVertices, GL_STATIC_DRAW);
+
     // Set vertex attribute pointers for the plane
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
@@ -288,20 +512,20 @@ int main() {
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
     glEnableVertexAttribArray(2);
 
-  
-   
     // Brick configuration
-    const int numBrickRows = 12;
-    const int numBrickCols = 10;
     const float brickWidth = 1.5f;
     const float brickHeight = 0.5f;
     const float brickDepth = 1.0f;
     const float brickSpacing = 0.1f;
 
     // Calculate the total number of cuboids (including bricks)
-    const int numNonBrick = 5;
     int brickIndex = numNonBrick;
-    const int numCuboids = numNonBrick + numBrickRows * numBrickCols;
+    isBrick = new bool[numCuboids];
+    for (int i = 0; i < numCuboids; ++i) {
+        isBrick[i] = false;
+    }
+    cuboidRigidBodies.resize(numCuboids);
+
     float positions[numCuboids][3] = {
         {0.0f, 0.0f, 13.0f},
         {0.0f, 0.0f, -15.0f},
@@ -311,14 +535,7 @@ int main() {
         // The remaining positions will be filled with brick positions
     };
 
-    float colors[numCuboids][3] = {
-        {1.0f, 1.0f, 0.0f},
-        {1.0f, 1.0f, 0.0f},
-        {1.0f, 1.0f, 0.0f},
-        {1.0f, 1.0f, 0.0f},
-        {1.0f, 1.0f, 0.0f}
-        // The remaining colors will be filled with brick colors
-    };
+    
 
     float dimensions[numCuboids][3] = {
         {4.0f, 1.0f, 1.0f},
@@ -359,18 +576,15 @@ int main() {
         }
     }
 
-    bool isBrick[numCuboids] = { false };
     for (int i = numNonBrick; i < numCuboids; ++i) {
         isBrick[i] = true;
     }
-    
 
-    std::vector<btCollisionShape*> cuboidShapes(numCuboids);
-    std::vector<btRigidBody*> cuboidRigidBodies(numCuboids);
-    std::vector<unsigned int> cuboidVAOs(numCuboids);
-    std::vector<unsigned int> cuboidVBOs(numCuboids);
-    std::vector<unsigned int> cuboidEBOs(numCuboids);
-    std::vector<std::vector<unsigned int>> cuboidIndices(numCuboids);
+    cuboidIndices.resize(numCuboids);
+    cuboidVAOs.resize(numCuboids);
+    cuboidShapes.resize(numCuboids);
+    cuboidVBOs.resize(numCuboids);
+    cuboidEBOs.resize(numCuboids);
 
     for (int i = 0; i < numCuboids; ++i) {
         // Create Bullet Physics collision shape for the cuboid
@@ -398,7 +612,6 @@ int main() {
             cuboidRigidBody->setCollisionFlags(cuboidRigidBody->getCollisionFlags() & ~btCollisionObject::CF_KINEMATIC_OBJECT);
             cuboidRigidBody->setCollisionFlags(cuboidRigidBody->getCollisionFlags() | btCollisionObject::CF_DYNAMIC_OBJECT);
         }
-
 
         // Add the cuboid rigid body to the dynamics world
         dynamicsWorld->addRigidBody(cuboidRigidBody);
@@ -430,14 +643,6 @@ int main() {
         glEnableVertexAttribArray(2);
     }
 
-
-    
-
-
-
-    
-    
-    
     // Create Bullet Physics shape and rigid body for the ball
     btCollisionShape* ballShape = new btSphereShape(ballRadius);
     btTransform ballTransform;
@@ -450,10 +655,9 @@ int main() {
     btRigidBody::btRigidBodyConstructionInfo ballRigidBodyCI(ballMass, ballMotionState, ballShape, ballLocalInertia);
     ballRigidBodyCI.m_restitution = 1.0f;
     ballRigidBodyCI.m_friction = 0.0f;
-    btRigidBody* ballRigidBody = new btRigidBody(ballRigidBodyCI);
+    ballRigidBody = new btRigidBody(ballRigidBodyCI);
     ballRigidBody->setLinearVelocity(btVector3(ballVelocity.x, ballVelocity.y, ballVelocity.z));
     dynamicsWorld->addRigidBody(ballRigidBody);
-    // COLLISION ///////////////////////
 
     // Generate sphere vertices and indices
     std::vector<float> ballVertices;
@@ -461,15 +665,15 @@ int main() {
     generateSphere(ballRadius, sphereSegments, sphereRings, ballVertices, ballIndices);
 
     // Create and bind the VAO for the ball
-    unsigned int ballVAO, ballVBO, ballEBO;
+    unsigned int ballVBO, ballEBO;
     glGenVertexArrays(1, &ballVAO);
     glGenBuffers(1, &ballVBO);
     glGenBuffers(1, &ballEBO);
     glBindVertexArray(ballVAO);
 
     // Buffer the vertex data
-    glBindBuffer(GL_ARRAY_BUFFER, ballVBO);
-    glBufferData(GL_ARRAY_BUFFER, ballVertices.size() * sizeof(float), &ballVertices[0], GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, ballVertices.size() * sizeof(float), ballVertices.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, ballIndices.size() * sizeof(unsigned int), ballIndices.data(), GL_STATIC_DRAW);
 
     // Buffer the index data
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ballEBO);
@@ -481,9 +685,9 @@ int main() {
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
     glEnableVertexAttribArray(2);
+
     // Unbind the VAO
     glBindVertexArray(0);
-
 
     // Shader compilation
     unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
@@ -495,7 +699,7 @@ int main() {
     glCompileShader(fragmentShader);
 
     // Shader program
-    unsigned int shaderProgram = glCreateProgram();
+    shaderProgram = glCreateProgram();
     glAttachShader(shaderProgram, vertexShader);
     glAttachShader(shaderProgram, fragmentShader);
     glLinkProgram(shaderProgram);
@@ -516,206 +720,18 @@ int main() {
 
     // Enable depth testing
     glEnable(GL_DEPTH_TEST);
-    
-    
-    // Main loop
-    while (!glfwWindowShouldClose(window)) {
-        // Input
-        processInput(window);
 
-        // Update ball position and velocity
-        float deltaTime = 0.01f; // Assuming a constant time step for simplicity
-        //ballPosition += ballVelocity * deltaTime;
+    // Set up GLUT callbacks
+    glutDisplayFunc(display);
+    glutReshapeFunc(reshape);
+    glutKeyboardFunc(keyboard);
+    glutSpecialFunc(specialKeyboard);
+    glutTimerFunc(0, timer, 0);
 
-        // Update ball position and velocity using Bullet Physics simulation
-        dynamicsWorld->stepSimulation(deltaTime, 10);
-
-        // In the main loop, after the physics simulation step
-        for (int i = 0; i < numCuboids; ++i) {
-            if (isBrick[i] && cuboidRigidBodies[i] != nullptr) {
-                MyContactResultCallback callback;
-                dynamicsWorld->contactPairTest(ballRigidBody, cuboidRigidBodies[i], callback);
-
-                if (callback.hasContact()) {
-                    // Get the collision normal from the callback
-                    btVector3 collisionNormal = callback.getCollisionNormal();
-
-                    // Get the ball's current velocity
-                    btVector3 ballVelocity = ballRigidBody->getLinearVelocity();
-
-                    // Calculate the reflection direction using the formula: R = V - 2(V · N)N
-                    btVector3 reflectedVelocity = ballVelocity - 2.0f * ballVelocity.dot(collisionNormal) * collisionNormal;
-
-                    // Update the ball's velocity with the reflected direction
-                    ballRigidBody->setLinearVelocity(reflectedVelocity);
-
-                    // Remove the cuboid from the dynamics world
-                    dynamicsWorld->removeRigidBody(cuboidRigidBodies[i]);
-
-                    // Delete the cuboid's collision shape, rigid body, and motion state
-                    delete cuboidRigidBodies[i]->getMotionState();
-                    delete cuboidRigidBodies[i];
-                    delete cuboidShapes[i];
-
-                    // Remove the cuboid's VAO, VBO, and EBO
-                    glDeleteVertexArrays(1, &cuboidVAOs[i]);
-                    glDeleteBuffers(1, &cuboidVBOs[i]);
-                    glDeleteBuffers(1, &cuboidEBOs[i]);
-
-                    // Mark the cuboid as deleted
-                    isBrick[i] = false;
-
-                    // Set the corresponding rigid body and collision shape pointers to nullptr
-                    cuboidRigidBodies[i] = nullptr;
-                    cuboidShapes[i] = nullptr;
-                }
-            }
-        }
-
-
-        // Get the ball's current velocity
-        btVector3 currentVelocity = ballRigidBody->getLinearVelocity();
-
-        // Calculate the speed of the ball
-        btScalar speed = currentVelocity.length();
-
-        // Define the desired constant speed
-        btScalar constantSpeed = 20.0f; // Adjust the value as needed
-
-        // Check if the current speed is not zero to avoid division by zero
-        if (speed != 0.0f) {
-            // Calculate the velocity direction
-            btVector3 velocityDirection = currentVelocity.normalized();
-
-            // Set the new velocity with the constant speed and the current direction
-            btVector3 newVelocity = velocityDirection * constantSpeed;
-
-            // Update the ball's velocity
-            ballRigidBody->setLinearVelocity(newVelocity);
-        }
-
-        btTransform ballTransform;
-        ballRigidBody->getMotionState()->getWorldTransform(ballTransform);
-        ballPosition = glm::vec3(ballTransform.getOrigin().getX(), ballTransform.getOrigin().getY(), ballTransform.getOrigin().getZ());
-        ballVelocity = glm::vec3(ballRigidBody->getLinearVelocity().getX(), ballRigidBody->getLinearVelocity().getY(), ballRigidBody->getLinearVelocity().getZ());
-        btVector3 ballVelocity = ballRigidBody->getLinearVelocity();
-        ballVelocity.setY(std::min(ballVelocity.getY(), 0.0f));
-        ballRigidBody->setLinearVelocity(ballVelocity);
-        // Render commands here
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        // Set the shader to use
-        glUseProgram(shaderProgram);
-
-        // Set up the transformation matrices
-        glm::mat4 model = glm::mat4(1.0f);
-        glm::mat4 view = glm::mat4(1.0f);
-        glm::mat4 projection = glm::mat4(1.0f);
-
-        glm::mat4 planeModel = glm::mat4(1.0f);
-        planeModel = glm::translate(planeModel, glm::vec3(0.0f, 0.0f, 0.0f)); // Translate the plane to y = -3
-
-
-
-
-        model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(0.5f, 1.0f, 0.0f));
-
-        glm::vec3 cameraPos = glm::vec3(3.0f, 15.0f, 25.0f);
-        glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
-        glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
-
-        // Create the view matrix using glm::lookAt
-        view = glm::lookAt(cameraPos, cameraTarget, cameraUp);
-
-        projection = glm::perspective(glm::radians(45.0f), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 100.0f);
-
-        // Set the uniform variables in the shader
-        unsigned int modelLoc = glGetUniformLocation(shaderProgram, "model");
-        unsigned int viewLoc = glGetUniformLocation(shaderProgram, "view");
-        unsigned int projectionLoc = glGetUniformLocation(shaderProgram, "projection");
-        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-        glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
-
-        // Set light properties
-        glUniform3f(glGetUniformLocation(shaderProgram, "lightColor"), 1.0f, 1.0f, 1.0f);
-        glUniform3f(glGetUniformLocation(shaderProgram, "lightPos"), 1.2f, 10.0f, 2.0f);
-        glUniform3f(glGetUniformLocation(shaderProgram, "objectColor"), 1.0f, 0.5f, 0.31f);
-        glUniform3fv(glGetUniformLocation(shaderProgram, "viewPos"), 1, glm::value_ptr(cameraPos));
-        // Render the plane with a specific color
-        glUniform3f(glGetUniformLocation(shaderProgram, "objectColor"), 0.5f, 0.8f, 0.7f); // Set the plane color to a light blue-green
-        glBindVertexArray(planeVAO);
-        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(planeModel));
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-
-        // Get the final model matrix of the rendering plane
-        glm::mat4 finalPlaneModel = planeModel * model;
-        glm::vec3 planePosition = glm::vec3(finalPlaneModel[3][0], finalPlaneModel[3][1], finalPlaneModel[3][2]);
-
-        // Create the Bullet Physics plane at the same position as the rendering plane
-        btCollisionShape* planeShape = new btStaticPlaneShape(btVector3(0, 1, 0), planePosition.y);
-        btTransform planeTransform;
-        planeTransform.setIdentity();
-        planeTransform.setOrigin(btVector3(planePosition.x, planePosition.y, planePosition.z));
-        btScalar planeMass(0.0f); // Set mass to 0 for static objects
-        btVector3 planeLocalInertia(0, 0, 0);
-        btDefaultMotionState* planeMotionState = new btDefaultMotionState(planeTransform);
-        btRigidBody::btRigidBodyConstructionInfo planeRigidBodyCI(planeMass, planeMotionState, planeShape, planeLocalInertia);
-        planeRigidBodyCI.m_restitution = 1.0f; // Set restitution to 1 for perfectly elastic collisions
-        planeRigidBodyCI.m_friction = 0.0f; // Set friction to 0 to avoid slowing down
-        btRigidBody* planeRigidBody = new btRigidBody(planeRigidBodyCI);
-        dynamicsWorld->addRigidBody(planeRigidBody);
-
-        // Update the position of the selected cuboid based on user input
-        int selectedCuboidIndex = 0;
-        btTransform cuboidTransform;
-        cuboidRigidBodies[selectedCuboidIndex]->getMotionState()->getWorldTransform(cuboidTransform);
-        glm::vec3 cuboidPosition = glm::vec3(cuboidTransform.getOrigin().getX(), cuboidTransform.getOrigin().getY(), cuboidTransform.getOrigin().getZ());
-        cuboidPosition += cuboidMoveDirection * cuboidMoveSpeed;
-
-        // Clamp the cuboid position within the x-coordinate limits
-        cuboidPosition.x = glm::clamp(cuboidPosition.x, cuboidMinX, cuboidMaxX);
-
-        cuboidTransform.setOrigin(btVector3(cuboidPosition.x, cuboidPosition.y, cuboidPosition.z));
-        cuboidRigidBodies[selectedCuboidIndex]->getMotionState()->setWorldTransform(cuboidTransform);
-
-        // Synchronize the Bullet Physics world with the updated cuboid position
-        cuboidRigidBodies[selectedCuboidIndex]->setWorldTransform(cuboidTransform);
-        cuboidRigidBodies[selectedCuboidIndex]->getMotionState()->setWorldTransform(cuboidTransform);
-
-
-        // Render the cuboids
-        for (int i = 0; i < numCuboids; ++i) {
-            // Skip rendering deleted cuboids
-            if (cuboidRigidBodies[i] == nullptr) {
-                continue;
-            }
-
-            btTransform cuboidTransform;
-            cuboidRigidBodies[i]->getMotionState()->getWorldTransform(cuboidTransform);
-            glm::vec3 cuboidPosition = glm::vec3(cuboidTransform.getOrigin().getX(), cuboidTransform.getOrigin().getY(), cuboidTransform.getOrigin().getZ());
-
-            glUniform3f(glGetUniformLocation(shaderProgram, "objectColor"), colors[i][0], colors[i][1], colors[i][2]);
-            glm::mat4 model = glm::mat4(1.0f);
-            model = glm::translate(model, cuboidPosition);
-            glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-            glBindVertexArray(cuboidVAOs[i]);
-            glDrawElements(GL_TRIANGLES, cuboidIndices[i].size(), GL_UNSIGNED_INT, 0);
-        }
-
-        // Render the ball using indexed rendering
-        glBindVertexArray(ballVAO);
-        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(glm::translate(glm::mat4(1.0f), ballPosition)));
-        glDrawElements(GL_TRIANGLES, static_cast<unsigned int>(ballIndices.size()), GL_UNSIGNED_INT, 0);
-
-        // Swap buffers and poll IO events
-        glfwSwapBuffers(window);
-        glfwPollEvents();
-    }
+    // Enter the GLUT event processing loop
+    glutMainLoop();
 
     // Clean up
- 
     glDeleteVertexArrays(1, &planeVAO);
     glDeleteBuffers(1, &planeVBO);
     glDeleteProgram(shaderProgram);
@@ -738,6 +754,7 @@ int main() {
     delete overlappingPairCache;
     delete dispatcher;
     delete collisionConfiguration;
+
     // Clean up
     for (int i = 0; i < numCuboids; ++i) {
         glDeleteVertexArrays(1, &cuboidVAOs[i]);
@@ -745,30 +762,19 @@ int main() {
         glDeleteBuffers(1, &cuboidEBOs[i]);
     }
 
-  
+    delete[] isBrick;
+    // Clean up OpenGL objects
+    glDeleteVertexArrays(1, &planeVAO);
+    glDeleteBuffers(1, &planeVBO);
+    glDeleteProgram(shaderProgram);
+    glDeleteBuffers(1, &ballEBO);
 
-    // Terminate GLFW
-    glfwTerminate();
+    for (int i = 0; i < numCuboids; ++i) {
+        glDeleteVertexArrays(1, &cuboidVAOs[i]);
+        glDeleteBuffers(1, &cuboidVBOs[i]);
+        glDeleteBuffers(1, &cuboidEBOs[i]);
+    }
+
+
     return 0;
-}
-
-void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
-    // Make sure the viewport matches the new window dimensions; note that width and
-    // height will be significantly larger than specified on retina displays.
-    glViewport(0, 0, width, height);
-}
-
-void processInput(GLFWwindow* window) {
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-        glfwSetWindowShouldClose(window, true);
-    }
-
-    // Update cuboid move direction based on left and right arrow key inputs
-    cuboidMoveDirection = glm::vec3(0.0f, 0.0f, 0.0f);
-    if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
-        cuboidMoveDirection.x = -1.0f;
-    }
-    if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
-        cuboidMoveDirection.x = 1.0f;
-    }
 }

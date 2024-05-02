@@ -84,15 +84,20 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LibraryPath>C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\GLEW\lib;C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\GLEW\include\GL;$(LibraryPath)</LibraryPath>
+    <LibraryPath>C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\GLEW\lib;C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\GLEW\include\GL;$(LibraryPath);"$(SolutionDir)Dependencies\freeglut\lib\$(Platform)"</LibraryPath>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);;"$(SolutionDir)Dependencies\freeglut\include"</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <LibraryPath>C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\GLEW\lib;C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\FREETYPE\lib;C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\BULLET PHYSICS\lib;C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\GLFW\lib-vc2022;$(LibraryPath)</LibraryPath>
-    <IncludePath>C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\FREETYPE\include;C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\GLUT\include;C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\GLM\include;C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\GLFW\include;C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\GLEW\include;C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\GLAD\include;C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\BULLET PHYSICS\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\alext\Downloads\freeglut-3.4.0\buid\lib\Release;C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\glew-2.1.0\lib\Release\x64;C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\FREETYPE\lib;C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\BULLET PHYSICS\lib;C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\GLFW\lib-vc2022;$(LibraryPath);$(SolutionDir)Dependencies\freeglut\lib\$(Platform)</LibraryPath>
+    <IncludePath>C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\FREETYPE\include;C:\Users\alext\Downloads\freeglut-3.4.0\include;C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\GLM\include;C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\GLFW\include;C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\glew-2.1.0\include;C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\GLAD\include;C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\BULLET PHYSICS\include;$(IncludePath);$(SolutionDir)Dependencies\freeglut\include</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\GLUT\include;C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\GLM\include;C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\GLAD\include;C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\BULLET PHYSICS\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\GLUT\lib;C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\BULLET PHYSICS\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\GLUT\include;C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\GLM\include;C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\GLAD\include;C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\BULLET PHYSICS\include;$(IncludePath);"$(SolutionDir)Dependencies\freeglut\include"</IncludePath>
+    <LibraryPath>C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\GLUT\lib;C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\BULLET PHYSICS\lib;$(LibraryPath);"$(SolutionDir)Dependencies\freeglut\lib\$(Platform)"</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);;"$(SolutionDir)Dependencies\freeglut\include"</IncludePath>
+    <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);"$(SolutionDir)Dependencies\freeglut\lib\$(Platform)"</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -101,13 +106,17 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\GLFW\include;$(SolutionDir)Dependencies\GLEW\include;$(SolutionDir)Dependencies\GLUT\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\GLUT\lib;$(SolutionDir)Dependencies\GLEW\lib;$(SolutionDir)Dependencies\GLFW\lib-vc2022;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glfw3.lib;opengl32.lib;glew32.lib;freeglut.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glfw3.lib;opengl32.lib;glew32.lib;freeglut.lib;%(AdditionalDependencies);freeglut.lib</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>copy "$(SolutionDir)Dependencies\freeglut\bin\$(Platform)\freeglut.dll" "$(OutDir)"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -118,6 +127,7 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\GLFW\include;$(SolutionDir)Dependencies\GLEW\include;$(SolutionDir)Dependencies\GLUT\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -125,8 +135,11 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\GLUT\lib;$(SolutionDir)Dependencies\GLEW\lib;$(SolutionDir)Dependencies\GLFW\lib-vc2022;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glfw3.lib;opengl32.lib;glew32.lib;freeglut.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glfw3.lib;opengl32.lib;glew32.lib;freeglut.lib;%(AdditionalDependencies);freeglut.lib</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>copy "$(SolutionDir)Dependencies\freeglut\bin\$(Platform)\freeglut.dll" "$(OutDir)"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -135,13 +148,17 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\GLEW\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>glew32s.lib;glew32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glew32s.lib;glew32.lib;%(AdditionalDependencies);freeglut.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\GLEW\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
+    <PostBuildEvent>
+      <Command>copy "$(SolutionDir)Dependencies\freeglut\bin\$(Platform)\freeglut.dll" "$(OutDir)"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -151,19 +168,22 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\GLUT\include;C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\BULLET PHYSICS\include;C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\GLFW\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\freeglut\include;C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\BULLET PHYSICS\include;C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\GLFW\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>glfw3.lib;opengl32.lib;BulletDynamics.lib;BulletCollision.lib;LinearMath.lib;freeglut.lib;glew32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\GLUT\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <EntryPointSymbol>
-      </EntryPointSymbol>
+      <AdditionalDependencies>opengl32.lib;BulletDynamics.lib;BulletCollision.lib;LinearMath.lib;freeglut.lib;glu32.lib;glew32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\glew-2.1.0\lib\Release\x64;C:\Users\alext\source\repos\brick-breaker-0.1\Dependencies\freeglut\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
     </Link>
+    <PostBuildEvent>
+      <Command>copy "$(SolutionDir)Dependencies\freeglut\bin\$(Platform)\freeglut.dll" "$(OutDir)"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
