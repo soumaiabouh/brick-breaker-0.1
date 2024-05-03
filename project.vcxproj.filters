@@ -18,9 +18,6 @@
     <ClCompile Include="src\design.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\glad.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Dependencies\STB_IMAGE\include\additional.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -36,6 +33,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Dependencies\LEARNOPENGL\include\learnopengl\shader_s.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\design.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
